@@ -9,6 +9,7 @@ from .srs_card import SrsCard
 from .chat import ChatSession, ChatMessage
 from .wolfram import WolframCache, WolframUsage
 from .syllabus_item import SyllabusItem
+from .textbook import SourceDocument, TextbookQuestion, TextbookConcept
 
 __all__ = [
     "Topic",
@@ -24,4 +25,7 @@ __all__ = [
     "WolframCache",
     "WolframUsage",
     "SyllabusItem",
+    "SourceDocument",
+    "TextbookQuestion",
+    "TextbookConcept",
 ]

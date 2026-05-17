@@ -223,3 +223,27 @@ Hard "do not touch" list (project memory preserves this rule):
 2. Wolfram verify (if WOLFRAM_APP_ID set): `scripts/wolfram_verify_batch.py`
 3. Approve: `scripts/approve_batch.py --topic calculus.derivatives`
 4. Phase 3: Frontend MVP
+
+### 2026-05-17 — pdf_ingest_agent :4710
+
+**Location:** `~/home_services/pdf_ingest_agent/`
+
+PDF probe findings:
+- `Unnamed-T3` custom math font → Vision required for ~70% pages
+- `doc.get_toc()` empty → TOC parsed from pages 5–6 via regex (primary), inline regex as fallback
+- Blue/drill question detection: cross-link answers PDF, NOT color fill
+- Answers PDF = full worked solutions (not just final answers)
+- Back-of-book answers: check last 30 pages of main PDF
+
+Architecture: FastAPI :4710, SQLite job registry, PyMuPDF + Vision pipeline, incremental JSONL output.
+Vision: OpenAI gpt-4o primary, Claude claude-sonnet-4-6 fallback, SQLite cache keyed by (pdf_hash, page_num).
+Verification: per-section Gates A1-A4 + LLM spot-check (2-3 Qs/section) + 7 final gates.
+`protected=true` on all textbook records.
+
+DB: migration `b4e1f9a2c305` adds `source_document`, `textbook_question`, `textbook_concept`.
+Orchestrator: `/v1/ingest/*` → proxy to :4710 via `routers/ingest.py`.
+
+**PDF files location (on skufs):** `~/tutor_skufs/source_docs/`
+Need to copy or rsync to MacBook before local dry-run/testing.
+
+**Step 1-3 complete (scaffold + probe + smoke test).** Steps 4-10 need actual Haese PDFs.
