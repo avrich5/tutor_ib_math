@@ -196,3 +196,30 @@ Hard "do not touch" list (project memory preserves this rule):
 4. **Phase 4 — Chat + expansion** (post-MVP)
    chat_agent with RAG, chat UI panel, progress_agent for recommendations,
    remaining 4 AA HL topics, nginx + whitelist + domain
+
+### 2026-05-17 — Phase 2 complete: content pipeline + syllabus anchor
+
+**Phase 2 deliverables (all on skufs, all committed):**
+
+- `home_services/math_agent`: LLM endpoints `/generate-solution` + `/generate-hints` live (v0.2.0)
+- `home_services/tutor_content_agent`: full pipeline in `core/generator.py`:
+  - fetches `syllabus_item` from DB, injects verbatim IB Subject Guide text into LLM system prompt
+  - scope check via `gpt-4o-mini` per question (rejects off-syllabus content)
+  - SymPy validation of `reference_answer` parseability
+  - solution steps via `math_agent`, 3-tier hints via `math_agent`, embedding via `embedding_agent`
+  - inserts with `status='pending_review'`
+- `home_services/tutor_content_agent/core/cli.py`: CLI `generate` + `list-topics`
+- `tutor_ib_math` DB: `syllabus_item` table (migration `a3f2c8e1d504`)
+- 6 `syllabus_item` rows seeded for `calculus.derivatives.*`
+- 34 questions in `pending_review` (30 full batch + 4 smoke test)
+- `scripts/seed_syllabus.py`, `scripts/wolfram_verify_batch.py`, `scripts/approve_batch.py`
+
+**Two bugs found+fixed during run:**
+1. OpenAI `response_format=json` returns `{"questions":[...]}` — robust parser handles all variants
+2. `sympy.symbols("x")` returns `Symbol` not tuple — fixed with `isinstance` guard
+
+**Next steps:**
+1. Human review pass: `backend/.venv/bin/python scripts/approve_batch.py --topic calculus.derivatives --dry-run`
+2. Wolfram verify (if WOLFRAM_APP_ID set): `scripts/wolfram_verify_batch.py`
+3. Approve: `scripts/approve_batch.py --topic calculus.derivatives`
+4. Phase 3: Frontend MVP
