@@ -8,6 +8,7 @@ from .attempt import Attempt
 from .srs_card import SrsCard
 from .chat import ChatSession, ChatMessage
 from .wolfram import WolframCache, WolframUsage
+from .syllabus_item import SyllabusItem
 
 __all__ = [
     "Topic",
@@ -22,4 +23,5 @@ __all__ = [
     "ChatMessage",
     "WolframCache",
     "WolframUsage",
+    "SyllabusItem",
 ]
