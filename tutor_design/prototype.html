@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1440, initial-scale=1" />
+  <title>Tutor</title>
+
+  <!-- KaTeX (math typesetting) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+
+  <!-- Fonts: both directions loaded; theme picks which to use -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@300;400;500;600&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400;1,7..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+  <!-- React + Babel (pinned per system prompt) -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-ui);
+      font-size: var(--fs-body);
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
+    /* KaTeX integration: inherit color, adjust scale slightly for body math */
+    .katex { color: inherit; font-size: 1.02em; }
+    .katex-display { margin: 0.6em 0; }
+    .katex-display > .katex { font-size: 1.18em; }
+
+    /* —————————————————— Theme: Octave (Newsreader + Plex Sans) —————————————————— */
+    /* Direction-level tokens (fonts, chrome, radii) — shared dark + light */
+    body[data-theme="octave"] {
+      --accent-hue: 70;          /* warm amber family */
+      --accent-chroma-dark: 0.13;
+      --accent-chroma-light: 0.15;
+
+      --font-display: 'Newsreader', Georgia, serif;
+      --font-prose:   'Newsreader', Georgia, serif;
+      --font-ui:      'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+      --radius: 10px;
+      --radius-sm: 6px;
+      --chip-radius: 999px;
+      --chrome-case: none;
+      --chrome-letterspacing: 0;
+      --chrome-weight: 500;
+    }
+    /* Octave — dark */
+    body[data-theme="octave"][data-mode="dark"] {
+      --bg: oklch(0.165 0.010 65);
+      --surface: oklch(0.205 0.010 65);
+      --elevated: oklch(0.245 0.012 65);
+      --paper: oklch(0.225 0.011 65);
+      --ink: oklch(0.945 0.010 75);
+      --ink-muted: oklch(0.72 0.012 75);
+      --ink-faint: oklch(0.52 0.012 75);
+      --line: oklch(0.305 0.010 65);
+      --hairline: oklch(0.255 0.008 65);
+      --accent:      oklch(0.78 var(--accent-chroma-dark) var(--accent-hue));
+      --accent-ink:  oklch(0.20 0.04 var(--accent-hue));
+      --accent-soft: oklch(0.78 var(--accent-chroma-dark) var(--accent-hue) / 0.14);
+      --positive: oklch(0.82 0.13 145);
+      --negative: oklch(0.78 0.12 25);
+      --warn:     oklch(0.82 0.14 75);
+    }
+    /* Octave — light (warm cream paper) */
+    body[data-theme="octave"][data-mode="light"] {
+      --bg:       oklch(0.985 0.008 80);
+      --surface:  oklch(0.965 0.012 80);
+      --elevated: oklch(0.935 0.014 80);
+      --paper:    oklch(0.950 0.013 80);
+      --ink:       oklch(0.225 0.014 60);
+      --ink-muted: oklch(0.48  0.013 60);
+      --ink-faint: oklch(0.66  0.012 60);
+      --line:     oklch(0.83 0.012 75);
+      --hairline: oklch(0.905 0.010 75);
+      --accent:      oklch(0.52 var(--accent-chroma-light) var(--accent-hue));
+      --accent-ink:  oklch(0.985 0.005 var(--accent-hue));
+      --accent-soft: oklch(0.52 var(--accent-chroma-light) var(--accent-hue) / 0.10);
+      --positive: oklch(0.50 0.13 145);
+      --negative: oklch(0.52 0.16 30);
+      --warn:     oklch(0.62 0.16 70);
+    }
+
+    /* —————————————————— Theme: Letterform (Literata + JetBrains Mono) —————————————————— */
+    body[data-theme="letterform"] {
+      --accent-hue: 35;          /* terracotta family */
+      --accent-chroma-dark: 0.13;
+      --accent-chroma-light: 0.16;
+
+      --font-display: 'Literata', Georgia, serif;
+      --font-prose:   'Literata', Georgia, serif;
+      --font-ui:      'JetBrains Mono', ui-monospace, monospace;
+      --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+      --radius: 3px;
+      --radius-sm: 2px;
+      --chip-radius: 3px;
+      --chrome-case: uppercase;
+      --chrome-letterspacing: 0.06em;
+      --chrome-weight: 500;
+    }
+    /* Letterform — dark */
+    body[data-theme="letterform"][data-mode="dark"] {
+      --bg:       oklch(0.175 0.008 255);
+      --surface:  oklch(0.215 0.009 255);
+      --elevated: oklch(0.255 0.010 255);
+      --paper:    oklch(0.235 0.008 255);
+      --ink:       oklch(0.94 0.005 250);
+      --ink-muted: oklch(0.66 0.010 250);
+      --ink-faint: oklch(0.48 0.010 250);
+      --line:     oklch(0.30 0.010 255);
+      --hairline: oklch(0.26 0.008 255);
+      --accent:      oklch(0.75 var(--accent-chroma-dark) var(--accent-hue));
+      --accent-ink:  oklch(0.18 0.04 var(--accent-hue));
+      --accent-soft: oklch(0.75 var(--accent-chroma-dark) var(--accent-hue) / 0.14);
+      --positive: oklch(0.80 0.12 165);
+      --negative: oklch(0.74 0.13 25);
+      --warn:     oklch(0.82 0.14 75);
+    }
+    /* Letterform — light (cool paper) */
+    body[data-theme="letterform"][data-mode="light"] {
+      --bg:       oklch(0.99  0.003 250);
+      --surface:  oklch(0.970 0.005 250);
+      --elevated: oklch(0.935 0.006 250);
+      --paper:    oklch(0.955 0.005 250);
+      --ink:       oklch(0.205 0.012 250);
+      --ink-muted: oklch(0.46  0.012 250);
+      --ink-faint: oklch(0.65  0.010 250);
+      --line:     oklch(0.84 0.008 250);
+      --hairline: oklch(0.915 0.005 250);
+      --accent:      oklch(0.50 var(--accent-chroma-light) var(--accent-hue));
+      --accent-ink:  oklch(0.99 0.003 var(--accent-hue));
+      --accent-soft: oklch(0.50 var(--accent-chroma-light) var(--accent-hue) / 0.10);
+      --positive: oklch(0.50 0.13 165);
+      --negative: oklch(0.55 0.16 25);
+      --warn:     oklch(0.62 0.16 75);
+    }
+
+    /* —————————————————— Density tweaks (applied via body[data-density]) —————————————————— */
+    body[data-density="cozy"]    { --fs-body: 15px; --fs-small: 12.5px; --fs-h1: 32px; --fs-h2: 22px; --pad-card: 22px; --pad-screen: 32px; --gap: 18px; }
+    body[data-density="compact"] { --fs-body: 14px; --fs-small: 11.5px; --fs-h1: 26px; --fs-h2: 18px; --pad-card: 16px; --pad-screen: 24px; --gap: 14px; }
+
+    /* selection */
+    ::selection { background: var(--accent-soft); color: var(--ink); }
+
+    /* scrollbars */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; border: 2px solid var(--bg); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+    /* utility chrome label class — used for breadcrumbs, badges, tab labels */
+    .chrome-label {
+      font-family: var(--font-mono);
+      font-size: var(--fs-small);
+      text-transform: var(--chrome-case);
+      letter-spacing: var(--chrome-letterspacing);
+      font-weight: var(--chrome-weight);
+      color: var(--ink-muted);
+    }
+    body[data-theme="octave"] .chrome-label { font-family: var(--font-ui); letter-spacing: 0.02em; }
+
+    #root { width: 100%; height: 100vh; overflow: hidden; }
+
+    /* KaTeX subtle weight match per theme */
+    body[data-theme="letterform"] .katex { font-size: 1.03em; }
+
+    /* input focus */
+    input:focus, textarea:focus, button:focus, [role="button"]:focus { outline: none; }
+
+    /* Keep ::placeholder consistent */
+    ::placeholder { color: var(--ink-faint); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- App scripts -->
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="components.jsx"></script>
+  <script type="text/babel" src="screens.jsx"></script>
+  <script type="text/babel" src="screens2.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+
+  <script>
+    // Read theme & mode from query string, apply to body BEFORE React mounts
+    const params = new URLSearchParams(location.search);
+    document.body.dataset.theme = params.get('theme') || 'octave';
+    document.body.dataset.mode = params.get('mode') || 'dark';
+    document.body.dataset.density = params.get('density') || 'cozy';
+  </script>
+</body>
+</html>

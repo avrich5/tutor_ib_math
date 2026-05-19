@@ -1,0 +1,392 @@
+================================================================================
+DESIGN BRIEF — SDL SPEEDRUN DECK
+a16z Speedrun 2026 · Five-slide pitch
+Prepared by Data Intelligence Lab
+================================================================================
+
+
+1. PROJECT IDENTITY
+--------------------------------------------------------------------------------
+
+Company:        Data Intelligence Lab
+Product:        Semantic Data Layer (SDL)
+Tagline:        Deterministic structure between noisy raw data
+                and language models.
+Audience:       a16z Speedrun partners and investment screeners.
+                Reading pattern: 60–90 seconds per deck on first pass,
+                then deeper if interested.
+Format:         Five slides, 16:9, dark theme.
+Intended use:   Cold-submission application + warm follow-up meetings.
+Tone:           Confident, declarative, low-decoration.
+                Closer to a technical whitepaper cover than a marketing
+                deck. No stock illustrations, no abstract gradients,
+                no AI-generated imagery.
+
+
+2. STRATEGIC INTENT (read before designing)
+--------------------------------------------------------------------------------
+
+This is a Deep Tech / Infrastructure deck. The reader is technical and
+arrives skeptical — most submissions in this category are GPT-wrappers
+with a market-sizing slide attached. The deck must signal architectural
+seriousness within ten seconds of opening slide 1.
+
+Three signals the design must carry across every slide:
+
+  - Substance over decoration. No element exists for visual effect alone.
+  - Mathematical precision. Whitespace, alignment, and typographic rhythm
+    matter more than imagery.
+  - Quiet confidence. The deck does not perform urgency, scarcity, or
+    enthusiasm. It states position.
+
+Every slide should be readable as a printed document. If the deck would
+not survive being printed in black-and-white and circulated as a memo,
+it has decorated itself wrong.
+
+This deck does not contain "Why Now" or "Why Us" slides. The architecture
+itself answers both questions: if the problem on slide 2 is real, "Why Now"
+is self-evident; if the solution on slide 3 holds, "Why Us" follows from
+the team that built it. The substrate line in the footer carries the
+credibility signal. Do not add a Why Now / Why Us slide back during
+design iteration.
+
+
+3. VISUAL LANGUAGE
+--------------------------------------------------------------------------------
+
+Reference: the original "What we do next" slide (attached separately as
+PNG) establishes the visual language. Use it as the baseline. Improvements
+welcome where they reinforce the strategic intent above; deviations away
+from this language require discussion.
+
+3.1 Palette
+    Background:         Near-black (#0A0A0B or similar). Not pure black.
+    Primary text:       Off-white (#E8E8E8 or similar). Not pure white.
+    Accent:             Warm yellow / amber (#E8B84A or similar).
+                        Used sparingly — keywords in titles, MOVE labels,
+                        accent square in headers. Never for body text.
+    Muted text:         Mid-gray (#6E6E72 or similar) for metadata,
+                        footers, secondary annotations.
+    No additional colors. No gradients. No shadows.
+
+3.2 Typography
+    Display / h1:       Sans-serif, slightly thin to regular weight.
+                        Large (60–80pt on 16:9). Used once per slide
+                        for the primary title.
+                        Suggested family: Inter, Söhne, or similar
+                        modern grotesque. Avoid Helvetica Neue.
+                        Avoid serif at display size.
+    Body:               Same family as display, regular weight, 18–22pt.
+                        Generous line height (1.45–1.55).
+    Metadata:           Monospace, uppercase, letter-spaced.
+                        Used for headers, footers, MOVE labels.
+                        Suggested family: JetBrains Mono, IBM Plex Mono,
+                        or similar.
+    Quotes / italics:   Italic serif for the IMPLICATION line on slide 5.
+                        Optional. Only place where serif appears.
+
+3.3 Accent treatment
+    The yellow accent is used to highlight the operative word in titles
+    (e.g. "What we do next" — "do next" in yellow). This is a consistent
+    device: one or two keywords per title highlighted in the accent color,
+    the rest in primary off-white.
+    Do not highlight more than 2–3 words per title.
+    Do not highlight body text.
+
+3.4 Layout grid
+    Slide frame:        Margins generous — minimum 5% on all sides.
+    Header band:        Top row contains slide title (left) and
+                        slide number / section label (right),
+                        both in monospace metadata style.
+                        Optional accent square (■ or ▪) to the left
+                        of the title.
+    Footer band:        Bottom row contains operating-info line (left)
+                        and company / contact / pagination (right),
+                        both in monospace metadata style.
+                        A thin horizontal rule separates the footer
+                        from the slide body.
+    Body:               Single-column, two-column, or three-column
+                        depending on slide. Columns separated by
+                        thin vertical rules in muted gray when used.
+
+3.5 Iconography and imagery
+    None. No icons, no illustrations, no diagrams unless explicitly
+    specified per slide. No photographs. No backgrounds beyond the
+    flat dark fill.
+
+
+4. SLIDE INVENTORY
+--------------------------------------------------------------------------------
+
+All five slides share:
+  - Header: SEMANTIC DATA LAYER (SDL)  [left]  ·  SPEEDRUN · 2026  [right]
+  - Footer: short operating-info line [left]  ·  DATA INTELLIGENCE LAB
+            · slide N / 5 [right]
+  - Thin horizontal rules separating header / body / footer
+
+Slide titles (operative word in accent yellow):
+
+  01  Semantic Data Layer (SDL)             [title slide — see 5.1]
+  02  The Problem                           [accent: "Problem"]
+  03  The Solution                          [accent: "Solution"]
+  04  Why this generalizes                  [accent: "generalizes"]
+  05  What we do next                       [accent: "do next"]
+
+
+5. PER-SLIDE CONTENT (final, do not edit text without sign-off)
+--------------------------------------------------------------------------------
+
+5.1 SLIDE 1 — TITLE
+
+  Header (left, monospace, muted):
+    SEMANTIC DATA LAYER (SDL)
+
+  Header (right, monospace, muted):
+    SPEEDRUN · 2026
+
+  Primary title (display, large, centered or upper-left aligned):
+    Deterministic structure between
+    noisy raw data and language models.
+
+  Subtitle (body, below title, two short lines):
+    LLMs try to reason over an unstructured world.
+    SDL gives them structure to reason over.
+
+  Footer (right, monospace, muted):
+    BY DATA INTELLIGENCE LAB
+
+  Design notes:
+    - This is the highest-stakes slide. Reader spends 5–10 seconds here.
+    - Title takes ~60% of vertical space. Generous breathing room above
+      and below the subtitle.
+    - No accent yellow on title text — the title is the product name in
+      action, all primary color. Optional: accent square before the title.
+
+
+5.2 SLIDE 2 — THE PROBLEM
+
+  Header (left, monospace, muted, with accent square):
+    ▪ THE PROBLEM
+
+  Header (right, monospace, muted):
+    02 — DIAGNOSIS
+
+  Primary title (display, accent on "Problem"):
+    LLMs don't reason over numbers.
+    They hide it well.
+
+  Body (three bullets, arrow markers in accent yellow):
+    →  9.11 and 9.8 are token sequences, not numbers.
+       Models learn their order statistically.
+
+    →  Irrelevant context before a numerical prompt raises
+       error rates 300%+ on frontier reasoning models.
+       (CatAttack, 2025)
+
+    →  The industry's answer: wrap the LLM around external
+       tools. The model still decides when to call them.
+       The failure mode stays.
+
+  Closing line (body, larger weight, separated from bullets by whitespace):
+    Bigger models hide it better. They don't fix it.
+
+  Footer (left): Operating company · Bootstrapped eight years
+  Footer (right): DATA INTELLIGENCE LAB · 02 / 05
+
+
+5.3 SLIDE 3 — THE SOLUTION
+
+  Header (left, monospace, muted):
+    ▪ THE SOLUTION
+
+  Header (right, monospace, muted):
+    03 — ARCHITECTURE
+
+  Primary title (display, accent on "Solution"):
+    Rules first. Learning second. Language last.
+
+  Subtitle (body):
+    We built an analytical pipeline that turns noisy raw
+    data into a clean semantic layer for LLMs.
+
+  Body (five-step pipeline, two columns visual: step name | description):
+    →  Signal extraction       Pull signal from noise.
+    →  Pattern recognition     Identify known patterns
+                               (Pattern Genome).
+    →  Pattern discovery       Surface new ones
+                               (Data-Driven Expansion).
+    →  State modelling         Simulate stable states.
+    →  Transition analysis     Map hidden states across
+                               regime transitions.
+
+  Closing line (body, larger weight, separated from pipeline by whitespace):
+    The LLM never generates facts. It receives them.
+
+  Design notes:
+    - The five-step pipeline reads as one continuous flow, not five
+      independent items. Optional: thin connecting line down the
+      left side of the arrows.
+    - The closing line is the architectural commitment of the entire
+      product. Give it visual weight comparable to the title.
+
+
+5.4 SLIDE 4 — UNIVERSALITY
+
+  Header (left, monospace, muted):
+    ▪ WHY THIS GENERALIZES
+
+  Header (right, monospace, muted):
+    04 — UNIVERSALITY
+
+  Primary title (display, accent on "generalizes"):
+    Every decision domain has the same structure.
+
+  Body, upper half (five primitives, two-column: label | gloss):
+    Environment    lives by its own laws
+    Subject        takes actions, receives feedback
+    Object         reacts, partially, with noise
+    Hidden state   drives outcomes, not directly observable
+    Transitions    between regimes change what signals mean
+
+  Body, middle (short paragraph, separated by whitespace):
+    Pattern Genome decomposes state into discrete units.
+    Data-Driven Expansion discovers new ones.
+    The semantic layer carries into any domain
+    where signals project from hidden state.
+
+  Body, lower half (four domain lines, arrow markers):
+    →  Financial markets     regime, volatility, liquidity
+    →  B2B sales             buyer state, deal momentum
+    →  Cognitive ops         belief trajectory, attention
+    →  Prediction markets    consensus state, information flow
+
+  Closing line:
+    SDL was earned in finance, where the cost of error
+    is fastest. The same primitives carry forward.
+
+  Design notes:
+    - This is the densest slide. Use whitespace aggressively to
+      separate the three blocks (primitives / paragraph / domains).
+    - The primitives could optionally be rendered as a small
+      structured visual (5 boxes or rows) rather than text columns,
+      if the designer finds a treatment that reads cleanly in
+      under 10 seconds. Default to text.
+
+
+5.5 SLIDE 5 — WHAT WE DO NEXT
+
+  Header (left, monospace, muted, with accent square):
+    ▪ WHAT WE DO NEXT
+
+  Header (right, monospace, muted):
+    05 — FORWARD MOTION
+
+  Primary title (display, accent on "do next"):
+    What we do next.
+
+  Subtitle (body):
+    Anchor. Scale. Productise the layer.
+
+  Body — three columns (MOVE 01 / MOVE 02 / MOVE 03):
+
+    MOVE 01 (column header in accent yellow, monospace):
+      Anchor the layer in financial instruments.
+
+      Crypto Exchange integration first.
+
+    MOVE 02 (column header in accent yellow, monospace):
+      Close the first commercial deployments
+      outside trading:
+
+      B2B Sales Ops
+      Polish industrial group.
+
+      Prototypes:
+      Praetor (Cognitive Ops)
+      Belief Trajectory (Prediction Markets)
+      Token Health (Fintech)
+
+    MOVE 03 (column header in accent yellow, monospace):
+      Productise SDL as infrastructure
+      for decision systems.
+
+      One layer, many domains.
+
+      Deterministic semantic data layer
+      on proprietary methodology.
+
+  Implication line (below columns, with accent square, italic optional):
+    ▪ IMPLICATION   The SDL becomes standard infrastructure
+                    for agent systems.
+
+  Footer (left): Operating company · Bootstrapped eight years
+  Footer (right): DATA INTELLIGENCE LAB · 05 / 05
+
+  Design notes:
+    - Three columns separated by thin vertical rules in muted gray.
+    - MOVE labels in accent yellow, monospace, uppercase.
+    - IMPLICATION line is the final mental imprint of the deck.
+      Treat it with weight comparable to a primary title — large
+      enough to register without scrolling.
+    - The deck ends on IMPLICATION. No additional closing line.
+
+
+6. WHAT TO AVOID
+--------------------------------------------------------------------------------
+
+  -  Stock photography, AI-generated imagery, abstract gradients,
+     particle effects, "AI brain" visuals, network graph illustrations,
+     glowing nodes. The deck is about a deterministic system; visual
+     metaphors of fuzzy neural networks contradict the message.
+
+  -  Color beyond the three-color palette (background, off-white text,
+     accent yellow). No blue, no green, no red. Muted gray for
+     metadata only.
+
+  -  Cluttered slides. If a slide has more than ~80 words of body text,
+     consider whether typography hierarchy is doing its job. Whitespace
+     is the most important visual element after typography.
+
+  -  Decorative dividers, ornamental rules, page numbers in display
+     typography. Metadata stays in monospace, muted, small.
+
+  -  Centered body text. Body text is left-aligned. Titles may be
+     left-aligned or centered depending on slide. Default: left-aligned.
+
+  -  Logos in the footer larger than the metadata text. Company name
+     in the footer should read as metadata, not as branding.
+
+  -  Animation on transitions in the static export. The deck must read
+     cleanly as PDF first; any animation is for live presentation only.
+
+  -  Adding a "Why Now" or "Why Us" slide back. The five-slide
+     structure is deliberate. The architecture itself carries
+     both arguments.
+
+  -  Adding a closing quote or team voice line after IMPLICATION
+     on slide 5. The deck ends on IMPLICATION. Deliberate restraint.
+
+
+7. DELIVERABLES
+--------------------------------------------------------------------------------
+
+  -  Master file in Figma or Keynote, with text fully editable.
+  -  PDF export, 16:9, 1920×1080 minimum resolution per slide.
+  -  Source fonts packaged or web-font equivalents documented.
+  -  One-slide style guide (palette, typography, spacing) as
+     internal reference for future decks.
+
+
+8. REFERENCE
+--------------------------------------------------------------------------------
+
+  Reference slide (the original "What we do next" slide, attached
+  separately as PNG) anchors the visual language. Minor refinements
+  in typography precision, grid alignment, and IMPLICATION treatment
+  are welcome. Substantial departures from the reference language
+  require discussion before execution.
+
+
+--------------------------------------------------------------------------------
+End of brief.
+--------------------------------------------------------------------------------

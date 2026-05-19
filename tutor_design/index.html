@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1440, initial-scale=1" />
+  <title>Tutor — Design Exploration</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: oklch(0.18 0.005 60); color: #ddd; font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+    #root { width: 100vw; height: 100vh; }
+    .prototype-frame { display: block; width: 100%; height: 100%; border: 0; background: oklch(0.16 0.01 60); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel">
+
+    /* ───────────────────────────── Parent app ─────────────────────────────
+       Two iframes (each loading prototype.html with a different theme),
+       a Tweaks panel that broadcasts settings to both iframes.
+       Design-canvas artboards are 1440 × 900 — the laptop reference size.
+    */
+
+    /* Accent options expose only the HUE; lightness + chroma are picked
+       per-theme and per-mode by CSS, so a tweaked accent stays readable
+       in both dark and light variants of each direction. */
+    const ACCENT_OPTIONS = [
+      { name: 'Default',   hue: null },
+      { name: 'Amber',     hue: 70  },
+      { name: 'Terracotta',hue: 30  },
+      { name: 'Sage',      hue: 145 },
+      { name: 'Aubergine', hue: 320 },
+      { name: 'Slate-blue',hue: 245 },
+    ];
+
+    function App() {
+      const [t, setTweak] = useTweaks({
+        density: 'cozy',
+        chatWidth: 380,
+        accentIndex: 0,
+        serverOffline: false,
+      });
+
+      // refs to all four iframes for postMessage
+      const iframeRefs = React.useRef({});
+
+      // Broadcast tweaks to both iframes whenever they change
+      const broadcast = React.useCallback(() => {
+        const payload = {
+          type: 'tutor:tweaks',
+          tweaks: {
+            density: t.density,
+            chatWidth: t.chatWidth,
+            accent: ACCENT_OPTIONS[t.accentIndex],
+            serverOffline: t.serverOffline,
+          },
+        };
+        Object.values(iframeRefs.current).forEach((f) => {
+          if (f && f.contentWindow) f.contentWindow.postMessage(payload, '*');
+        });
+      }, [t]);
+
+      React.useEffect(() => { broadcast(); }, [broadcast]);
+      const onFrameLoad = (key) => (e) => {
+        iframeRefs.current[key] = e.currentTarget;
+        // Re-broadcast after each frame loads
+        setTimeout(broadcast, 50);
+      };
+
+      return (
+        <>
+          <DesignCanvas>
+            <DCSection id="octave"
+              title="Direction A — Octave"
+              subtitle="Newsreader + IBM Plex Sans · warm-dark amber · textbook-monograph feel. Soft 10px corners, sentence-case chrome.">
+
+              <DCArtboard id="octave-dark" label="Dark" width={1440} height={900}>
+                <iframe className="prototype-frame" src="prototype.html?theme=octave&mode=dark"
+                  onLoad={onFrameLoad('octave-dark')} title="Octave · Dark" />
+              </DCArtboard>
+
+              <DCArtboard id="octave-light" label="Light" width={1440} height={900}>
+                <iframe className="prototype-frame" src="prototype.html?theme=octave&mode=light"
+                  onLoad={onFrameLoad('octave-light')} title="Octave · Light" />
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection id="letterform"
+              title="Direction B — Letterform"
+              subtitle="Literata + JetBrains Mono · cool slate, terracotta · NYT/FT digital feel. Hard 3px corners, uppercase mono chrome.">
+
+              <DCArtboard id="letterform-dark" label="Dark" width={1440} height={900}>
+                <iframe className="prototype-frame" src="prototype.html?theme=letterform&mode=dark"
+                  onLoad={onFrameLoad('letterform-dark')} title="Letterform · Dark" />
+              </DCArtboard>
+
+              <DCArtboard id="letterform-light" label="Light" width={1440} height={900}>
+                <iframe className="prototype-frame" src="prototype.html?theme=letterform&mode=light"
+                  onLoad={onFrameLoad('letterform-light')} title="Letterform · Light" />
+              </DCArtboard>
+            </DCSection>
+          </DesignCanvas>
+
+          <TweaksPanel title="Tweaks">
+            <TweakSection label="Affects all four">
+              <TweakRadio label="Density"
+                value={t.density}
+                options={[{ label: 'Cozy', value: 'cozy' }, { label: 'Compact', value: 'compact' }]}
+                onChange={(v) => setTweak('density', v)} />
+              <TweakSelect label="Accent"
+                value={t.accentIndex}
+                options={ACCENT_OPTIONS.map((a, i) => ({ label: a.name, value: i }))}
+                onChange={(v) => setTweak('accentIndex', Number(v))} />
+              <TweakSlider label="Chat width" min={320} max={520} step={20}
+                value={t.chatWidth} onChange={(v) => setTweak('chatWidth', v)} unit="px" />
+              <TweakToggle label="Server offline"
+                value={t.serverOffline} onChange={(v) => setTweak('serverOffline', v)} />
+            </TweakSection>
+          </TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
