@@ -11,10 +11,6 @@ class Settings(BaseSettings):
     backend_host: str = "0.0.0.0"
     backend_port: int = 4800
     log_level: str = "INFO"
-    openai_api_key: str = ""
-    openai_model: str = "gpt-4o"
-    anthropic_api_key: str = ""
-    anthropic_model: str = "claude-haiku-4-5-20251001"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

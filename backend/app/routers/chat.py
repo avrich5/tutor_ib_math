@@ -12,7 +12,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from sse_starlette.sse import EventSourceResponse
 
-from app.config import settings
 from app.db import SessionLocal, get_db
 from app.models.chat import ChatMessage, ChatSession
 from app.models.session import StudySession
@@ -200,6 +199,7 @@ async def send_message(
         assistant_content = result["content"]
         tokens_in = result["tokens_in"]
         tokens_out = result["tokens_out"]
+        provider = result.get("provider", "unknown")
     except Exception as exc:
         logger.error("LLM call failed: %s", exc)
         db.rollback()
@@ -212,7 +212,7 @@ async def send_message(
         session_id=session.id,
         role="assistant",
         content_md=assistant_content,
-        provider=f"anthropic/{settings.anthropic_model}",
+        provider=provider,
         tokens_in=tokens_in,
         tokens_out=tokens_out,
         cost_usd=cost_usd,
@@ -270,14 +270,19 @@ async def stream_message(
         full_text: list[str] = []
         tokens_in = 0
         tokens_out = 0
+        provider = "unknown"
         stream_ok = False
 
         try:
             async for event in orchestrator.chat_stream(
                 messages=llm_messages, system=system_prompt
             ):
-                if event["type"] == "start":
+                if event["type"] == "provider":
+                    provider = event["provider"]
+                elif event["type"] == "start":
                     tokens_in = event["tokens_in"]
+                    if "provider" in event:
+                        provider = event["provider"]
                 elif event["type"] == "delta":
                     full_text.append(event["text"])
                     yield {"event": "chunk", "data": _json.dumps({"delta": event["text"]})}
@@ -301,7 +306,7 @@ async def stream_message(
                 session_id=chat_session_id,
                 role="assistant",
                 content_md=content,
-                provider=f"anthropic/{settings.anthropic_model}",
+                provider=provider,
                 tokens_in=tokens_in,
                 tokens_out=tokens_out,
                 cost_usd=cost_usd,
