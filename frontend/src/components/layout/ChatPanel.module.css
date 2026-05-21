@@ -1,12 +1,22 @@
+/* ── Panel shell ─────────────────────────────────────────────────────────── */
 .panel {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: var(--pad-card);
-  gap: var(--gap);
+  overflow: hidden;
 }
 
-.heading {
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px var(--pad-card);
+  border-bottom: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+
+.title {
   font-size: var(--fs-small);
   text-transform: var(--chrome-case);
   letter-spacing: var(--chrome-letterspacing);
@@ -14,7 +24,34 @@
   color: var(--ink-faint);
 }
 
-.placeholder {
+.newBtn {
+  background: none;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: color 0.15s, border-color 0.15s;
+}
+.newBtn:hover {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+/* ── Messages ────────────────────────────────────────────────────────────── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px var(--pad-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.empty {
   flex: 1;
   display: flex;
   align-items: center;
@@ -22,8 +59,157 @@
   text-align: center;
   font-size: var(--fs-small);
   color: var(--ink-faint);
-  border: 1px dashed var(--hairline);
-  border-radius: var(--radius);
-  padding: var(--pad-card);
   line-height: 1.6;
+  padding: var(--pad-card);
+}
+
+.message {
+  display: flex;
+  max-width: 92%;
+}
+
+.user {
+  align-self: flex-end;
+}
+
+.assistant {
+  align-self: flex-start;
+}
+
+.userText {
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-radius: 12px 12px 2px 12px;
+  padding: 7px 11px;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ── Markdown wrapper (assistant messages) ───────────────────────────────── */
+.mdWrapper {
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 100%;
+}
+
+.mdWrapper p {
+  margin: 0 0 0.5em;
+}
+.mdWrapper p:last-child {
+  margin-bottom: 0;
+}
+
+.mdWrapper h1,
+.mdWrapper h2,
+.mdWrapper h3 {
+  font-size: var(--fs-small);
+  font-weight: 600;
+  margin: 0.6em 0 0.25em;
+  color: var(--ink);
+}
+
+.mdWrapper ul,
+.mdWrapper ol {
+  margin: 0.3em 0 0.5em 1.2em;
+  padding: 0;
+}
+
+.mdWrapper li {
+  margin: 0.15em 0;
+}
+
+.mdWrapper code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.mdWrapper pre {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  overflow-x: auto;
+  margin: 0.4em 0;
+}
+
+.mdWrapper pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* KaTeX display blocks */
+.mdWrapper .katex-display {
+  overflow-x: auto;
+  margin: 0.4em 0;
+}
+
+/* ── Error ───────────────────────────────────────────────────────────────── */
+.errorMsg {
+  font-size: var(--fs-small);
+  color: var(--negative);
+  padding: 4px 0;
+}
+
+/* ── Input area ──────────────────────────────────────────────────────────── */
+.inputArea {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px var(--pad-card);
+  border-top: 1px solid var(--hairline);
+  flex-shrink: 0;
+}
+
+.textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.textarea:focus {
+  border-color: var(--accent);
+}
+.textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sendBtn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.sendBtn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+.sendBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }

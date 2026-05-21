@@ -298,3 +298,28 @@ Need to copy or rsync to MacBook before local dry-run/testing.
 1. Убедиться что `chat_session` и `chat_message` пишутся в Postgres (таблицы уже в схеме, см. SPEC раздел 5)
 2. Сказать пользователю где просматривать сохранённые сессии.
    Подтверждено: `GET /chat/sessions` достаточно (прямой просмотр на диске тоже возможен, но API удобнее)
+
+### 2026-05-21 — Phase 5 completed (Chat + RAG MVP)
+
+**Что сделано:**
+- Backend: `app/routers/chat.py` — sessions CRUD + sync message + SSE streaming (EventSourceResponse)
+- Backend: `app/services/chat_context.py` — system prompt builder (current question + weak topics + RAG)
+- Backend: `app/services/rag.py` — pgvector cosine search (`question.embedding`), LRU embed cache, hint lookup
+- Frontend: `ChatPanel.tsx` — SSE streaming, citation pills, markdown+math, session context auto-attach
+- Frontend: `CitationPill.tsx` — hover tooltip, Q=orange/C=green/hint=yellow
+
+**Что НЕ сделано (специально):**
+- Haese RAG — Phase 5.5
+- UI истории чатов — только терминальная команда ниже
+- Token usage UI
+
+**Просмотр чатов из терминала:**
+```bash
+python3 scripts/dump_chat.py --list          # последние 20 сессий
+python3 scripts/dump_chat.py <uuid>          # полный JSON дамп с токенами/ценой
+```
+
+**Tech debt:**
+- `orchestrator_client.py` вызывает Anthropic API напрямую (не через chat_agent :4708)
+  Исправить когда `chat_agent` в `~/home_services/` будет реализован
+  ANTHROPIC_API_KEY находится в `tutor_backend/.env` (temp)
