@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import health
+from app.routers import health, users, sessions, attempts, questions
 
 logging.basicConfig(level=settings.log_level)
 
@@ -22,6 +22,10 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(users.router)
+app.include_router(sessions.router)
+app.include_router(attempts.router)
+app.include_router(questions.router)
 
 if __name__ == "__main__":
     import uvicorn
