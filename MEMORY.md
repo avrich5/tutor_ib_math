@@ -291,3 +291,10 @@ Need to copy or rsync to MacBook before local dry-run/testing.
 - `VITE_API_BASE_URL=http://192.168.1.11:4800` in `.env.local` on skufs (browser resolves on MacBook)
 
 **Status:** `tsc --noEmit` clean, all 15 backend routes verified, Vite on :5200.
+
+### Reminder — Phase 4 chat (pending)
+
+При подключении чата (chat_agent + ChatPanel):
+1. Убедиться что `chat_session` и `chat_message` пишутся в Postgres (таблицы уже в схеме, см. SPEC раздел 5)
+2. Сказать пользователю где просматривать сохранённые сессии.
+   Подтверждено: `GET /chat/sessions` достаточно (прямой просмотр на диске тоже возможен, но API удобнее)
