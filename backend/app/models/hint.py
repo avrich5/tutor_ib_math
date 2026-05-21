@@ -11,6 +11,8 @@ class Hint(Base):
     __tablename__ = "hint"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    source_type: Mapped[str] = mapped_column(String, nullable=False, default="generated")
+    source_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     question_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("question.id", ondelete="CASCADE"), nullable=False
     )

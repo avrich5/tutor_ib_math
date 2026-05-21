@@ -256,57 +256,70 @@ CREATE INDEX ix_topic_slug ON topic(slug);
 
 ```sql
 -- Concepts (definitions, axioms, theorems, named methods)
+-- Phase R1: source_type/source_id added; topic_id made nullable for textbook rows.
 CREATE TABLE concept (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug         TEXT UNIQUE NOT NULL,    -- "chain_rule", "fundamental_thm_calculus"
-  topic_id     UUID NOT NULL REFERENCES topic(id),
-  kind         TEXT NOT NULL,           -- definition | theorem | method | axiom
+  source_type  TEXT NOT NULL DEFAULT 'generated',  -- 'generated' | 'textbook'
+  source_id    UUID,                               -- FK into textbook_concept (loose, no FK constraint)
+  slug         TEXT UNIQUE NOT NULL,               -- generated: "chain_rule"; textbook: "tb-{uuid}"
+  topic_id     UUID REFERENCES topic(id),          -- NULL for textbook rows until classification
+  kind         TEXT NOT NULL,                      -- definition | theorem | method | axiom | theory | key_point | worked_example | ...
   title        TEXT NOT NULL,
-  statement_md TEXT NOT NULL,           -- markdown w/ KaTeX delimiters
-  proof_md     TEXT,                    -- optional, for theorems
-  examples_md  TEXT,                    -- worked examples
-  embedding    vector(768),             -- for RAG
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+  statement_md TEXT NOT NULL,                      -- markdown w/ KaTeX delimiters
+  proof_md     TEXT,                               -- optional, for theorems
+  examples_md  TEXT,                               -- worked examples
+  embedding    vector(768),                        -- for RAG
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (source_type IN ('generated', 'textbook')),
+  UNIQUE (source_type, source_id)                  -- prevents duplicate mirroring
 );
 CREATE INDEX ix_concept_topic ON concept(topic_id);
 CREATE INDEX ix_concept_embedding ON concept USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX ix_concept_source ON concept(source_type, source_id);
 
 -- Questions (the bank)
+-- Phase R1: source_type/source_id added; topic_id and reference_answer made nullable.
 CREATE TABLE question (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  topic_id              UUID NOT NULL REFERENCES topic(id),
-  kind                  TEXT NOT NULL,    -- flashcard | mc | free_expression
-                                          -- | free_numeric | ordered_steps
+  source_type           TEXT NOT NULL DEFAULT 'generated',  -- 'generated' | 'textbook'
+  source_id             UUID,                               -- FK into textbook_question (loose)
+  topic_id              UUID REFERENCES topic(id),          -- NULL for textbook rows until classification
+  kind                  TEXT NOT NULL,                      -- flashcard | mc | free_expression | free_numeric | ordered_steps
   difficulty            SMALLINT NOT NULL CHECK (difficulty BETWEEN 1 AND 5),
   stem_md               TEXT NOT NULL,
-  stem_latex            TEXT,              -- optional rendered form
-  -- Answer format depends on kind:
-  reference_answer      TEXT NOT NULL,     -- canonical answer (SymPy-parseable)
+  stem_latex            TEXT,
+  reference_answer      TEXT,                               -- NULL for textbook rows (no solution yet)
   reference_answer_tex  TEXT,
-  mc_options            JSONB,             -- {"A": "...", "B": "...", ...} when kind=mc
-  mc_correct_key        TEXT,              -- "A" when kind=mc
-  ordered_steps         JSONB,             -- [{"text":"...","correct_pos":1},...]
-  variables             TEXT[],            -- ["x","y"] for SymPy parsing
-  solution_steps        JSONB NOT NULL,    -- [{"text":"...","latex":"..."}]
+  mc_options            JSONB,
+  mc_correct_key        TEXT,
+  ordered_steps         JSONB,
+  variables             TEXT[],
+  solution_steps        JSONB NOT NULL,
   related_concept_ids   UUID[] NOT NULL DEFAULT '{}',
-  source                TEXT,              -- "generated:openai" | "manual" | "ib_past_paper"
+  source                TEXT,
   wolfram_verified      BOOLEAN NOT NULL DEFAULT false,
   status                TEXT NOT NULL DEFAULT 'pending_review',
-                                          -- pending_review | approved | retired
   embedding             vector(768),
-  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CHECK (source_type IN ('generated', 'textbook')),
+  UNIQUE (source_type, source_id)
 );
 CREATE INDEX ix_question_topic ON question(topic_id);
 CREATE INDEX ix_question_status ON question(status);
 CREATE INDEX ix_question_difficulty ON question(difficulty);
 CREATE INDEX ix_question_embedding ON question USING ivfflat (embedding vector_cosine_ops);
+CREATE INDEX ix_question_source ON question(source_type, source_id);
 ```
 
 
 ```sql
--- Three-tier hints, pre-generated, served from DB
+-- Three-tier hints (stored for generated questions only).
+-- Textbook question hints are derived on-demand by hint_resolver.py — NOT stored here.
+-- Phase R1: source_type/source_id added for completeness (all generated, source_id=NULL).
 CREATE TABLE hint (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_type  TEXT NOT NULL DEFAULT 'generated',
+  source_id    UUID,
   question_id  UUID NOT NULL REFERENCES question(id) ON DELETE CASCADE,
   tier         SMALLINT NOT NULL CHECK (tier IN (1,2,3)),
   kind         TEXT NOT NULL,           -- recall | apply | full
@@ -734,13 +747,36 @@ Chat panel:
 
 ---
 
-## 8. LLM strategy table (for tutor's use cases)
+## 8. Hints
+
+### Generated questions
+
+Hints are pre-generated offline (by `math_agent`), stored in the `hint` table, and served directly. Three tiers per question: tier 1 = recall, tier 2 = apply, tier 3 = full.
+
+### Textbook questions (Phase R1)
+
+Textbook questions have no pre-stored hints. Hints are **derived on demand** by `services/hint_resolver.py` without LLM calls and without storing anything.
+
+The hint tier strategy mirrors the original design goal — _"вспомни что говорилось в теореме такой-то"_:
+
+| Tier | Kind looked up | Format |
+|------|---------------|--------|
+| 1 | nearest `textbook_concept` with `kind IN ('theory', 'key_point')` (cosine sim on question embedding) | `"Recall from §{chapter}: **{label}** — {first 200 chars of text_md}"` |
+| 2 | nearest `textbook_concept` with `kind='worked_example'` | `"This is similar to the worked example in §{chapter}: **{label}**.\n\n{first 400 chars}"` |
+| 3 | full text of `textbook_concept` linked via `related_example_ids`, or nearest worked_example in same chapter as fallback | full `text_md` of the worked example |
+
+Embedding similarity uses the pre-computed `question.embedding` (copied from `textbook_question.embedding` at seed time) so no LLM call is needed at hint-serve time.
+
+The `GET /questions/{id}/hint?tier=N` endpoint is unchanged. The router calls `resolve_hint(db, id, tier)` which dispatches based on `question.source_type`.
+
+### LLM strategy table (for content generation use cases)
 
 | Use case | Primary | Fallback | Notes |
 |----------|---------|----------|-------|
 | Embedding text for RAG | Ollama nomic-embed-text | — | Local, free, unlimited |
 | Mass question generation | OpenAI gpt-4o | Anthropic claude-sonnet-4 | Offline, batch |
-| Generating hints (3 tiers) | OpenAI gpt-4o | Anthropic | Offline, stored in DB |
+| Generating hints for generated Qs | OpenAI gpt-4o | Anthropic | Offline, stored in DB |
+| Textbook question hints (R1) | No LLM — cosine sim on stored embeddings | — | On-demand, not stored |
 | Generating reference solution | OpenAI gpt-4o | Anthropic | Verified by Wolfram before save |
 | Chat: simple follow-ups | Ollama llama3.2 | OpenAI | If cheap path can answer |
 | Chat: deep conceptual question | OpenAI gpt-4o | Anthropic | RAG-grounded |

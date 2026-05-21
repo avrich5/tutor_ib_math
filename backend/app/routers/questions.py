@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models.hint import Hint
 from app.models.question import Question
 from app.models.user import AppUser
 from app.routers.auth import get_current_user
+from app.services.hint_resolver import resolve_hint
 
 router = APIRouter()
 
@@ -23,11 +23,11 @@ def get_hint(
     except ValueError:
         raise HTTPException(status_code=422, detail="Invalid UUID")
 
-    hint = db.query(Hint).filter_by(question_id=qid, tier=tier).first()
-    if not hint:
+    result = resolve_hint(db, qid, tier)
+    if not result:
         raise HTTPException(status_code=404, detail=f"Hint tier {tier} not found")
 
-    return {"tier": hint.tier, "hint_md": hint.text_md}
+    return result
 
 
 @router.get("/questions/{question_id}/solution")

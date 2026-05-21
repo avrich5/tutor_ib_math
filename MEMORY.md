@@ -392,3 +392,26 @@ cd ~/tutor_skufs/backend
 
 **Источник данных:** `~/home_services/pdf_ingest_agent/jobs/*/output.jsonl`
   (44/59 секций ✅ — ch01-ch10; остаток ch09_9A + mixed ch8-11 pending PDF ingest)
+
+### 2026-05-21 — Phase R1 completed (textbook-first content pivot)
+
+**Что сделано:**
+- Migration `d8e4f2a1b395`: added `source_type TEXT NOT NULL DEFAULT 'generated'` + `source_id UUID` to `question`, `concept`, `hint`; made `question.topic_id`, `question.reference_answer`, `concept.topic_id` nullable; added CHECK + unique + composite index on all three tables.
+- ORM models updated: `question.py`, `concept.py`, `hint.py` — source_type/source_id fields added; nullable relaxed to match migration.
+- Migration `e5f3c1d2a846`: 4 PL/pgSQL triggers — UPDATE sync (textbook→unified) and INSERT mirror (auto-insert new textbook rows) for both question and concept.
+- `scripts/seed_textbook_to_unified.py` — idempotent seed of 1258 textbook_question → question + 193 textbook_concept → concept as source_type='textbook'. Concept slugs: `tb-{tc.id}`.
+- `services/hint_resolver.py` — resolve_hint(db, question_id, tier): generated → direct hint table; textbook → derive from nearest textbook_concept via embedding cosine similarity. Tier 1=theory/key_point, Tier 2=worked_example, Tier 3=full worked example text. Not stored in hint table.
+- `routers/questions.py` hint handler: replaced direct Hint query with `resolve_hint()` call (5-line swap, only router change in entire phase).
+
+**Acceptance commands (run on skufs after alembic upgrade + seed):**
+```bash
+alembic current   # → e5f3c1d2a846
+psql -d tutor_ib_math -c "SELECT source_type, COUNT(*) FROM question GROUP BY source_type;"
+# expected: generated | 34,  textbook | 1258
+psql -d tutor_ib_math -c "SELECT source_type, COUNT(*) FROM concept GROUP BY source_type;"
+# expected: textbook | 193
+TBQ_ID=$(psql -d tutor_ib_math -tc "SELECT id FROM question WHERE source_type='textbook' LIMIT 1;" | tr -d ' ')
+curl -u user:pass "http://localhost:4800/questions/${TBQ_ID}/hint?tier=1"
+```
+
+**Known limitation:** `rag.py` `_fetch_questions` uses INNER JOIN on topic — textbook questions (topic_id=NULL) won't appear in question RAG. They still appear via `textbook_questions` RAG key. Fix deferred (requires rag.py change which is out of scope for R1).

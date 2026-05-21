@@ -13,14 +13,16 @@ class Question(Base):
     __tablename__ = "question"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    topic_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("topic.id"), nullable=False, index=True
+    source_type: Mapped[str] = mapped_column(String, nullable=False, default="generated")
+    source_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    topic_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("topic.id"), nullable=True, index=True
     )
     kind: Mapped[str] = mapped_column(String, nullable=False)
     difficulty: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     stem_md: Mapped[str] = mapped_column(Text, nullable=False)
     stem_latex: Mapped[str | None] = mapped_column(Text, nullable=True)
-    reference_answer: Mapped[str] = mapped_column(Text, nullable=False)
+    reference_answer: Mapped[str | None] = mapped_column(Text, nullable=True)
     reference_answer_tex: Mapped[str | None] = mapped_column(Text, nullable=True)
     mc_options: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     mc_correct_key: Mapped[str | None] = mapped_column(String, nullable=True)
