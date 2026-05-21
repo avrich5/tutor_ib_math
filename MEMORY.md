@@ -247,3 +247,12 @@ Orchestrator: `/v1/ingest/*` → proxy to :4710 via `routers/ingest.py`.
 Need to copy or rsync to MacBook before local dry-run/testing.
 
 **Step 1-3 complete (scaffold + probe + smoke test).** Steps 4-10 need actual Haese PDFs.
+
+
+### 2026-05-21 — Frontend stack corrections (Phase 3)
+
+- **Tailwind отменён.** Едем на vanilla CSS + CSS Modules. Причина: визуальный язык letterform (Plex/Literata/JetBrains Mono) построен на тонкой типографике и CSS custom properties — Tailwind utility-классы не дают нужного контроля.
+- **`mathlive-react` убран** как несуществующий пакет. Используем только `mathlive` v0.105+. Интеграция через React `useRef` + императивный API (`mathfield.value`, `addEventListener`).
+- **Тема: letterform. Density: compact.** Принимается как продакшн-дефолт. Токены в `src/styles/tokens.css`.
+- **Wire format ответа: LaTeX string.** Согласовано с тем что backend хранит `reference_answer` как LaTeX и math_agent умеет парсить LaTeX через SymPy.
+- **Статус Phase 3:** frontend scaffold создан, `tsc --noEmit` чист, `npm run dev` стартует на `0.0.0.0:5173`.

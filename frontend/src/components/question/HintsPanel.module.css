@@ -1,0 +1,47 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: var(--gap);
+}
+
+.hint {
+  padding: 10px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+
+.hintLabel {
+  font-size: var(--fs-small);
+  text-transform: var(--chrome-case);
+  letter-spacing: var(--chrome-letterspacing);
+  font-weight: var(--chrome-weight);
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tierBtn {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: var(--fs-small);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.tierBtn:hover:not(:disabled) {
+  background: var(--elevated);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.tierBtn:disabled { opacity: 0.4; cursor: not-allowed; }

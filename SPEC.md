@@ -579,15 +579,13 @@ and easy port to another subject.
 ### Stack and key libraries
 
 - **React 18** + **TypeScript** + **Vite** (no Next.js — single SPA)
-- **TailwindCSS** for styling
+- **Vanilla CSS + CSS Modules** for styling. Global design tokens (CSS custom properties) live in `src/styles/tokens.css` — ported from `tutor_design/prototype.html` (theme: letterform, dark/light via `data-mode`, density: compact fixed). No Tailwind.
 - **TanStack Query** (react-query) for server state
 - **React Router** for routing
-- **KaTeX** (`react-katex`) for rendering math
-- **MathLive** (`mathlive` + `mathlive-react`) for math input
-- **Recharts** for stats/graphs (mastery over time)
-- **Plotly.js** for interactive function exploration
-  (recharts can do basic, plotly for serious math plotting)
-- **EventSource polyfill** if needed for SSE chat
+- **KaTeX** (`katex`, `react-katex`) for rendering math
+- **MathLive** (`mathlive` v0.105+) for math input — integrated as custom element `<math-field>` via React `useRef` and imperative API (`mathfield.value`, `addEventListener('input', ...)`). No `mathlive-react` wrapper (package does not exist).
+- **Plotly.js** for interactive function exploration (Function Explorer screen, Phase 3.6+)
+- **EventSource polyfill** if needed for SSE chat (Phase 4)
 
 ### Project layout
 
@@ -596,7 +594,6 @@ and easy port to another subject.
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
-├── tailwind.config.ts
 ├── index.html
 ├── src/
 │   ├── main.tsx

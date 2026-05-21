@@ -1,0 +1,25 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.stem {
+  font-family: var(--font-prose);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.meta {
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+  text-transform: var(--chrome-case);
+  letter-spacing: var(--chrome-letterspacing);
+}
+
+.actions {
+  display: flex;
+  gap: var(--gap);
+  margin-top: 4px;
+}

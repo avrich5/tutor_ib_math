@@ -1,0 +1,3 @@
+.inline { display: inline; }
+.block  { display: block; overflow-x: auto; padding: 8px 0; text-align: center; }
+.katex-error { color: var(--negative); font-family: var(--font-mono); font-size: 0.85em; }

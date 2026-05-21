@@ -1,0 +1,29 @@
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-card);
+  gap: var(--gap);
+}
+
+.heading {
+  font-size: var(--fs-small);
+  text-transform: var(--chrome-case);
+  letter-spacing: var(--chrome-letterspacing);
+  font-weight: var(--chrome-weight);
+  color: var(--ink-faint);
+}
+
+.placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius);
+  padding: var(--pad-card);
+  line-height: 1.6;
+}

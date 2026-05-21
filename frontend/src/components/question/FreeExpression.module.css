@@ -1,0 +1,27 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.field {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  font-size: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  --selection-color: var(--accent);
+  --selection-background-color: var(--accent-soft);
+  --keyboard-toolbar-background: var(--elevated);
+  --keyboard-toolbar-text: var(--ink);
+  transition: border-color 0.15s;
+}
+
+.field:focus-within {
+  border-color: var(--accent);
+  outline: none;
+}

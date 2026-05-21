@@ -1,0 +1,28 @@
+.actions {
+  display: flex;
+  gap: var(--gap);
+}
+
+.btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: var(--fs-body);
+  border: none;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.gotIt {
+  background: var(--positive);
+  color: oklch(0.12 0 0);
+}
+.gotIt:hover:not(:disabled) { filter: brightness(1.08); }
+
+.missedIt {
+  background: var(--negative);
+  color: oklch(0.97 0 0);
+}
+.missedIt:hover:not(:disabled) { filter: brightness(1.08); }

@@ -1,0 +1,72 @@
+/* Letterform theme — design tokens */
+/* Ported exactly from tutor_design/prototype.html */
+
+:root {
+  /* Theme identity */
+  --accent-hue: 35;
+  --accent-chroma-dark: 0.13;
+  --accent-chroma-light: 0.16;
+
+  /* Typography */
+  --font-display: 'Literata', Georgia, serif;
+  --font-prose:   'Literata', Georgia, serif;
+  --font-ui:      'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* Shape */
+  --radius: 3px;
+  --radius-sm: 2px;
+  --chip-radius: 3px;
+
+  /* Chrome */
+  --chrome-case: uppercase;
+  --chrome-letterspacing: 0.06em;
+  --chrome-weight: 500;
+
+  /* Compact density — fixed */
+  --fs-body:  14px;
+  --fs-small: 11.5px;
+  --fs-h1:    26px;
+  --fs-h2:    18px;
+  --pad-card:   16px;
+  --pad-screen: 24px;
+  --gap: 14px;
+}
+
+/* Letterform dark */
+:root[data-mode="dark"] {
+  --bg:       oklch(0.175 0.008 255);
+  --surface:  oklch(0.215 0.009 255);
+  --elevated: oklch(0.255 0.010 255);
+  --paper:    oklch(0.235 0.008 255);
+  --ink:       oklch(0.94  0.005 250);
+  --ink-muted: oklch(0.66  0.010 250);
+  --ink-faint: oklch(0.48  0.010 250);
+  --line:     oklch(0.30  0.010 255);
+  --hairline: oklch(0.26  0.008 255);
+  --accent:      oklch(0.75 var(--accent-chroma-dark) var(--accent-hue));
+  --accent-ink:  oklch(0.18 0.04 var(--accent-hue));
+  --accent-soft: oklch(0.75 var(--accent-chroma-dark) var(--accent-hue) / 0.14);
+  --positive: oklch(0.80 0.12 165);
+  --negative: oklch(0.74 0.13 25);
+  --warn:     oklch(0.82 0.14 75);
+}
+
+/* Letterform light */
+:root[data-mode="light"] {
+  --bg:       oklch(0.99  0.003 250);
+  --surface:  oklch(0.970 0.005 250);
+  --elevated: oklch(0.935 0.006 250);
+  --paper:    oklch(0.955 0.005 250);
+  --ink:       oklch(0.205 0.012 250);
+  --ink-muted: oklch(0.46  0.012 250);
+  --ink-faint: oklch(0.65  0.010 250);
+  --line:     oklch(0.84  0.008 250);
+  --hairline: oklch(0.915 0.005 250);
+  --accent:      oklch(0.50 var(--accent-chroma-light) var(--accent-hue));
+  --accent-ink:  oklch(0.99 0.003 var(--accent-hue));
+  --accent-soft: oklch(0.50 var(--accent-chroma-light) var(--accent-hue) / 0.10);
+  --positive: oklch(0.50 0.13 165);
+  --negative: oklch(0.55 0.16 25);
+  --warn:     oklch(0.62 0.16 75);
+}
