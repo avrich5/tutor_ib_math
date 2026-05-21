@@ -1,0 +1,29 @@
+.row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+}
+
+.card {
+  padding: var(--pad-card);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.label {
+  font-size: var(--fs-small);
+  color: var(--ink-faint);
+  text-transform: var(--chrome-case);
+  letter-spacing: var(--chrome-letterspacing);
+  margin-top: 4px;
+}

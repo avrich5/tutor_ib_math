@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { api } from '../api/client';
 import type { Question, AttemptResponse, SessionSummary } from '../api/types';
 
@@ -37,8 +37,33 @@ const INITIAL: SessionState = {
   startTime: null,
 };
 
-export function useSession(topicSlug = 'calculus.derivatives') {
+export function useSession(topicSlug = 'calculus.derivatives', preloadedSessionId?: string) {
   const [state, setState] = useState<SessionState>(INITIAL);
+
+  // If a session was already created (e.g. by SessionNew), jump straight to first question
+  useEffect(() => {
+    if (!preloadedSessionId) return;
+    setState(s => ({ ...s, phase: 'starting', sessionId: preloadedSessionId, error: null }));
+    api.nextQuestion(preloadedSessionId).then(next => {
+      if (!next.question) {
+        api.endSession(preloadedSessionId).then(summary =>
+          setState(s => ({ ...s, phase: 'finished', summary }))
+        );
+        return;
+      }
+      setState(s => ({
+        ...s,
+        phase: 'question',
+        sessionId: preloadedSessionId,
+        question: next.question,
+        questionNumber: next.question_number,
+        totalQuestions: next.total_questions,
+        hintsUsed: 0,
+        startTime: Date.now(),
+      }));
+    }).catch(e => setState(s => ({ ...s, phase: 'error', error: String(e) })));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preloadedSessionId]);
   const stateRef = useRef(state);
   stateRef.current = state;
 

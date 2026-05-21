@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useSession } from '../hooks/useSession';
 import { QuestionView } from '../components/question/QuestionView';
 import { Button } from '../components/ui/Button';
@@ -6,7 +7,10 @@ import { Card } from '../components/ui/Card';
 import styles from './Session.module.css';
 
 export function Session() {
-  const session = useSession('calculus.derivatives');
+  const { sessionId } = useParams<{ sessionId?: string }>();
+  const [searchParams] = useSearchParams();
+  const topicSlug = searchParams.get('topic') ?? 'calculus.derivatives';
+  const session = useSession(topicSlug, sessionId);
 
   // Keyboard: Enter advances when in feedback phase
   useEffect(() => {

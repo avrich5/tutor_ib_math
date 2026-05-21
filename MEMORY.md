@@ -256,3 +256,38 @@ Need to copy or rsync to MacBook before local dry-run/testing.
 - **Тема: letterform. Density: compact.** Принимается как продакшн-дефолт. Токены в `src/styles/tokens.css`.
 - **Wire format ответа: LaTeX string.** Согласовано с тем что backend хранит `reference_answer` как LaTeX и math_agent умеет парсить LaTeX через SymPy.
 - **Статус Phase 3:** frontend scaffold создан, `tsc --noEmit` чист, `npm run dev` стартует на `0.0.0.0:5173`.
+
+### 2026-05-21 — Phase 3 backend + Phase 4 frontend complete
+
+**Backend routers added (all in `backend/app/routers/`):**
+- `auth.py` — HTTPBasic single-user dependency; auto-creates `AppUser` row in DB on first call
+- `sessions.py` — POST /sessions, GET /sessions/today (with SRS queue + topic list), POST /sessions/{id}/next, POST /sessions/{id}/end; in-memory `_queues` dict (MVP); `KIND_MAP = {"mc": "multiple_choice"}` for DB→frontend kind mapping
+- `attempts.py` — POST /attempts with `_grade()` for all question kinds (mc/flashcard/free_numeric local, free_expression via orchestrator with SymPy fallback)
+- `questions.py` — GET /questions/{id}/hint?tier=N, GET /questions/{id}/solution
+- `users.py` — GET /me
+- `topics.py` — GET /topics (tree), GET /topics/{slug:path} (path converter for dot-notation slugs); `_child_slugs()` determines leaf vs category; maps `statement_md→summary_md`
+- `concepts.py` — GET /concepts/{id}
+- `progress.py` — GET /progress/summary (streak/accuracy/due_today), GET /progress/weak-topics?n=N, GET /progress/activity?days=N
+
+**Frontend new/updated files (src/):**
+- `api/types.ts` — all typed interfaces (TodayData, SessionOut, QuestionEnvelope, AttemptOut, TodayTopic, Topic, TopicSummary, Concept, ProgressSummary, WeakTopic, ActivityDay, ActivityData)
+- `api/client.ts` — added listTopics, getTopic, getConcept, progressSummary, weakTopics, activity
+- `pages/Dashboard.tsx` + `.module.css` — streak card, stats row, due queue with topic links, "Start reviewing" button
+- `pages/SessionNew.tsx` — creates session via API and redirects to `/session/:id` (replaces old idle start state)
+- `pages/TopicList.tsx` + `.module.css` — tree view with mastery bars
+- `pages/TopicDetail.tsx` + `.module.css` — concepts list, mastery bar, due count, Start session button
+- `pages/ConceptDetail.tsx` — proof + examples sections, KaTeX rendering
+- `pages/ProgressView.tsx` + `.module.css` — streak callout, 30-day activity bar chart (pure CSS, no Plotly), weak-topics accuracy bars
+- `components/ui/StatsRow.tsx` + `.module.css`
+- `components/layout/AppLayout.tsx` — nav sidebar added (Home / Topics / Progress)
+- `App.tsx` — routing: `/`, `/topics`, `/topics/:slug/*`, `/concepts/:id`, `/session/new`, `/session/:sessionId`, `/progress`
+- `hooks/useSession.ts` — `preloadedSessionId` param: skips idle, calls nextQuestion directly
+
+**Critical bug fixed before commit:**
+- `Session.tsx`: imported but unused `useNavigate` → TS6133. Removed.
+
+**Port:**
+- Vite dev server: port **5200** (5173 was occupied by another process)
+- `VITE_API_BASE_URL=http://192.168.1.11:4800` in `.env.local` on skufs (browser resolves on MacBook)
+
+**Status:** `tsc --noEmit` clean, all 15 backend routes verified, Vite on :5200.

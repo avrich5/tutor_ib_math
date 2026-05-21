@@ -87,7 +87,81 @@ export interface UserResponse {
 
 // ─── SRS queue (GET /sessions/today) ─────────────────────────────────────────
 
+export interface TodayTopic {
+  topic_slug: string;
+  title: string;
+  due_count: number;
+  approved_questions: number;
+}
+
 export interface TodayQueueResponse {
   due_count: number;
-  topics: Array<{ topic_slug: string; due: number }>;
+  topics: TodayTopic[];
+  suggested_topic_slug: string | null;
+}
+
+// ─── Topics ──────────────────────────────────────────────────────────────────
+
+export type TopicKind = 'leaf' | 'category';
+
+export interface TopicSummary {
+  slug: string;
+  title: string;
+  kind: TopicKind;
+  approved_questions: number;
+  due_count: number;
+}
+
+export interface ConceptSummary {
+  concept_id: string;
+  title: string;
+  summary_md: string;
+}
+
+export interface TopicDetail extends TopicSummary {
+  description_md: string;
+  concepts: ConceptSummary[];
+  mastery: number | null;
+}
+
+// ─── Concepts ────────────────────────────────────────────────────────────────
+
+export interface ConceptDetail {
+  concept_id: string;
+  title: string;
+  summary_md: string;
+  topic_slug: string;
+  proof_md?: string;
+  examples_md?: string;
+}
+
+// ─── Progress ────────────────────────────────────────────────────────────────
+
+export interface ProgressSummary {
+  total_attempts: number;
+  total_correct: number;
+  accuracy: number;
+  streak_days: number;
+  minutes_today: number;
+  minutes_week: number;
+  due_today: number;
+  due_this_week: number;
+}
+
+export interface WeakTopic {
+  topic_slug: string;
+  title: string;
+  accuracy: number;
+  attempts: number;
+}
+
+export interface ActivityDay {
+  date: string;
+  attempts: number;
+  correct: number;
+  minutes: number;
+}
+
+export interface ActivityResponse {
+  days: ActivityDay[];
 }

@@ -153,7 +153,7 @@ directly. One direction, one layer at a time.
 
 ### Port assignments
 
-- Frontend (Vite dev): 5173
+- Frontend (Vite dev): 5200
 - tutor_backend: 4800
 - home_orchestrator: 4700
 - agents: 4705–4709
@@ -470,8 +470,9 @@ Auth: HTTP Basic in dev (single user); JWT in Phase 4.
 | POST | /chat/sessions/{id}/messages | Send a message, get reply |
 | GET | /chat/sessions/{id}/messages | History |
 | POST | /chat/sessions/{id}/messages/stream | SSE-streamed reply |
-| GET | /progress/summary | Overall mastery numbers |
-| GET | /progress/weak-topics | Weakness analysis |
+| GET | /progress/summary | Overall mastery, streak, accuracy, due count |
+| GET | /progress/weak-topics?n=N | Top N topics needing work (accuracy + attempts) |
+| GET | /progress/activity?days=N | Per-day attempt/correct/minutes buckets for last N days |
 
 
 ### Sample request/response

@@ -7,6 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from sqlalchemy import func
+
 from app.db import get_db
 from app.models.attempt import Attempt
 from app.models.question import Question
@@ -57,7 +59,52 @@ def sessions_today(
         .filter(SrsCard.user_id == user.id, SrsCard.due_at <= now)
         .count()
     )
-    return {"due_count": due_count, "topics": []}
+
+    # Build topics list: all topics with approved questions
+    all_topics = db.query(Topic).all()
+    topic_rows = []
+    for t in all_topics:
+        approved = (
+            db.query(func.count(Question.id))
+            .filter(Question.topic_id == t.id, Question.status == "approved")
+            .scalar()
+            or 0
+        )
+        if approved == 0:
+            continue
+        due = (
+            db.query(func.count(SrsCard.id))
+            .join(Question, Question.id == SrsCard.question_id)
+            .filter(
+                Question.topic_id == t.id,
+                SrsCard.user_id == user.id,
+                SrsCard.due_at <= now,
+            )
+            .scalar()
+            or 0
+        )
+        topic_rows.append(
+            {
+                "topic_slug": t.slug,
+                "title": t.name,
+                "due_count": due,
+                "approved_questions": approved,
+            }
+        )
+
+    topic_rows.sort(key=lambda x: (-x["due_count"], x["topic_slug"]))
+    topic_rows = topic_rows[:10]
+
+    # suggested_topic_slug: max due_count, else first with approved questions
+    suggested = None
+    if topic_rows:
+        by_due = sorted(topic_rows, key=lambda x: -x["due_count"])
+        if by_due[0]["due_count"] > 0:
+            suggested = by_due[0]["topic_slug"]
+        else:
+            suggested = topic_rows[0]["topic_slug"]
+
+    return {"due_count": due_count, "topics": topic_rows, "suggested_topic_slug": suggested}
 
 
 @router.post("/sessions")

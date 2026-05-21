@@ -1,8 +1,9 @@
 import type {
-  AttemptRequest, AttemptResponse,
-  HealthResponse, Hint, NextQuestionResponse,
-  Session, SessionSummary, Solution,
-  TodayQueueResponse, UserResponse,
+  ActivityResponse, AttemptRequest, AttemptResponse,
+  ConceptDetail, HealthResponse, Hint, NextQuestionResponse,
+  ProgressSummary, Session, SessionSummary, Solution,
+  TodayQueueResponse, TopicDetail, TopicSummary, UserResponse,
+  WeakTopic,
 } from './types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4800';
@@ -70,4 +71,25 @@ export const api = {
 
   endSession: (sessionId: string) =>
     apiFetch<SessionSummary>(`/sessions/${sessionId}/end`, { method: 'POST' }),
+
+  // Topics
+  listTopics: () =>
+    apiFetch<TopicSummary[]>('/topics'),
+
+  getTopic: (slug: string) =>
+    apiFetch<TopicDetail>(`/topics/${slug}`),
+
+  // Concepts
+  getConcept: (id: string) =>
+    apiFetch<ConceptDetail>(`/concepts/${id}`),
+
+  // Progress
+  progressSummary: () =>
+    apiFetch<ProgressSummary>('/progress/summary'),
+
+  weakTopics: (limit = 5) =>
+    apiFetch<WeakTopic[]>(`/progress/weak-topics?limit=${limit}`),
+
+  activity: (days = 30) =>
+    apiFetch<ActivityResponse>(`/progress/activity?days=${days}`),
 };
