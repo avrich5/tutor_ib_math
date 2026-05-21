@@ -11,11 +11,11 @@ class OrchestratorClient:
         self._headers = {"X-API-Key": settings.orchestrator_api_key}
 
     async def embed_text(self, text: str) -> list[float]:
+        embed_base = settings.embedding_agent_url.rstrip("/")
         async with httpx.AsyncClient(timeout=30.0) as c:
             r = await c.post(
-                f"{self._base}/v1/embed",
+                f"{embed_base}/embed",
                 json={"text": text},
-                headers=self._headers,
             )
             r.raise_for_status()
             return r.json()["embedding"]

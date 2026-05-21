@@ -118,6 +118,8 @@ def _weak_topics(db: Session, user_id, limit: int = 3) -> list[dict]:
 def _add_rag_section(parts: list[str], rag: dict) -> None:
     questions = rag.get("questions", [])
     concepts = rag.get("concepts", [])
+    tb_concepts = rag.get("textbook_concepts", [])
+    tb_questions = rag.get("textbook_questions", [])
 
     if questions:
         parts.append(
@@ -140,4 +142,22 @@ def _add_rag_section(parts: list[str], rag: dict) -> None:
         for c in concepts:
             stmt_preview = c["statement_md"][:100] + ("..." if len(c["statement_md"]) > 100 else "")
             parts.append(f"- [C:{c['id']}] {c['title']}: {stmt_preview}")
+        parts.append("")
+
+    if tb_concepts:
+        parts.append("Relevant Haese textbook content:")
+        for tc in tb_concepts:
+            label = tc.get("label") or tc["kind"]
+            section = tc.get("section_title") or ""
+            ch = tc.get("chapter") or ""
+            preview = tc["text_md"][:120] + ("..." if len(tc["text_md"]) > 120 else "")
+            loc = f"ch{ch} — {section}" if ch and section else (section or f"ch{ch}")
+            parts.append(f"- [{label}] ({loc}): {preview}")
+        parts.append("")
+
+    if tb_questions:
+        parts.append("Similar textbook exercise questions (Haese):")
+        for tq in tb_questions:
+            preview = tq["stem_md"][:100] + ("..." if len(tq["stem_md"]) > 100 else "")
+            parts.append(f"- Exercise {tq['exercise_ref']} Q{tq['question_number']} (ch{tq['chapter']}): {preview}")
         parts.append("")

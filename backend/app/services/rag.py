@@ -1,4 +1,4 @@
-"""RAG retrieval over question and concept embeddings via pgvector."""
+"""RAG retrieval over question, concept, and Haese textbook embeddings via pgvector."""
 from __future__ import annotations
 
 import logging
@@ -50,32 +50,35 @@ async def retrieve(
     query: str,
     k_questions: int = 3,
     k_concepts: int = 2,
+    k_textbook: int = 3,
 ) -> dict:
     """
     Returns:
     {
-        "questions": [
-            {"id": str, "stem_md": str, "topic_slug": str, "similarity": float,
-             "hints": [{"id": str, "tier": int, "text_md": str}, ...]},
-            ...
-        ],
-        "concepts": [
-            {"id": str, "title": str, "statement_md": str, "similarity": float},
-            ...
-        ]
+        "questions":          [{id, stem_md, topic_slug, similarity, hints:[...]}],
+        "concepts":           [{id, title, statement_md, similarity}],
+        "textbook_concepts":  [{id, kind, label, section_title, chapter, text_md, similarity}],
+        "textbook_questions": [{id, exercise_ref, question_number, stem_md, chapter, similarity}],
     }
     """
     try:
         embedding = await _embed_cached(query)
     except Exception as exc:
         logger.warning("embed_text failed, skipping RAG: %s", exc)
-        return {"questions": [], "concepts": []}
+        return {"questions": [], "concepts": [], "textbook_concepts": [], "textbook_questions": []}
 
     vec = _vec_str(embedding)
     questions = _fetch_questions(db, vec, k_questions)
     concepts = _fetch_concepts(db, vec, k_concepts)
+    tb_concepts = _fetch_textbook_concepts(db, vec, k_textbook)
+    tb_questions = _fetch_textbook_questions(db, vec, k_textbook)
 
-    return {"questions": questions, "concepts": concepts}
+    return {
+        "questions": questions,
+        "concepts": concepts,
+        "textbook_concepts": tb_concepts,
+        "textbook_questions": tb_questions,
+    }
 
 
 def _fetch_questions(db: Session, vec_str: str, k: int) -> list[dict]:
@@ -139,6 +142,65 @@ def _fetch_concepts(db: Session, vec_str: str, k: int) -> list[dict]:
             "id": row.id,
             "title": row.title,
             "statement_md": row.statement_md,
+            "similarity": round(float(row.similarity), 4),
+        }
+        for row in rows
+    ]
+
+
+def _fetch_textbook_concepts(db: Session, vec_str: str, k: int) -> list[dict]:
+    rows = db.execute(
+        text(
+            """
+            SELECT tc.id::text, tc.kind, tc.label, tc.section_title, tc.chapter,
+                   tc.text_md,
+                   1 - (tc.embedding <=> CAST(:vec AS vector)) AS similarity
+            FROM textbook_concept tc
+            WHERE tc.embedding IS NOT NULL
+            ORDER BY tc.embedding <=> CAST(:vec AS vector)
+            LIMIT :k
+            """
+        ),
+        {"vec": vec_str, "k": k},
+    ).fetchall()
+
+    return [
+        {
+            "id": row.id,
+            "kind": row.kind,
+            "label": row.label,
+            "section_title": row.section_title,
+            "chapter": row.chapter,
+            "text_md": row.text_md,
+            "similarity": round(float(row.similarity), 4),
+        }
+        for row in rows
+    ]
+
+
+def _fetch_textbook_questions(db: Session, vec_str: str, k: int) -> list[dict]:
+    rows = db.execute(
+        text(
+            """
+            SELECT tq.id::text, tq.exercise_ref, tq.question_number,
+                   tq.stem_md, tq.chapter,
+                   1 - (tq.embedding <=> CAST(:vec AS vector)) AS similarity
+            FROM textbook_question tq
+            WHERE tq.embedding IS NOT NULL
+            ORDER BY tq.embedding <=> CAST(:vec AS vector)
+            LIMIT :k
+            """
+        ),
+        {"vec": vec_str, "k": k},
+    ).fetchall()
+
+    return [
+        {
+            "id": row.id,
+            "exercise_ref": row.exercise_ref,
+            "question_number": row.question_number,
+            "stem_md": row.stem_md,
+            "chapter": row.chapter,
             "similarity": round(float(row.similarity), 4),
         }
         for row in rows
