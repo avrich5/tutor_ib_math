@@ -22,10 +22,6 @@ router = APIRouter()
 
 def _child_slugs(db: Session) -> set[str]:
     """Return set of topic slugs that have at least one child."""
-    rows = db.query(Topic.slug).join(
-        Topic, Topic.parent_id == Topic.id, isouter=False
-    ).all()
-    # parents of child topics
     parents = (
         db.query(Topic.slug)
         .filter(
