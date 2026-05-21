@@ -25,6 +25,51 @@ Tutor — отдельный продукт, который использует
 Новые агенты для tutor добавляются В `~/home_services/`, не в tutor.
 
 
+## ACTIVE ARCHITECTURE (effective 2026-05-21)
+
+**This block overrides any earlier assumption about content sourcing. Read it first. Old decisions below remain as history; this block wins on conflict.**
+
+### Content model — textbook is primary
+
+Haese Mathematics — Analysis and Approaches HL is the **primary source of truth** for all teaching material: definitions, theorems, formulas, worked examples, exercises. Everything in `textbook_concept` and `textbook_question` is canonical content.
+
+Generated content (`source_type='generated'` in unified tables) is **supplementary filler**, invisible to the student. It exists only to top up practice when the textbook does not have enough drill on a specific skill.
+
+Original user intent (from project kickoff): _"натаскивание по типу Quizlet, но не прямое копирование... понятия, определения, аксиомы и теоремы [from textbook]... умные подсказки типа 'вспомни что говорилось в теореме такой-то'"_. The textbook is what the student returns to. The tutor is a Quizlet-style trainer **on top of** the textbook, not a replacement.
+
+### Unified-pointer pattern (Phase R1)
+
+Tables `question`, `concept`, `hint` carry two columns: `source_type` (`'textbook'` | `'generated'`) and `source_id` (UUID into `textbook_question` / `textbook_concept`, or NULL for generated rows).
+
+- Routers and frontend read from `question` / `concept` / `hint` only. They do NOT know which source a row came from. This is intentional.
+- Textbook rows are mirrored into the unified tables via INSERT trigger + UPDATE sync trigger on `textbook_*`. Single source of truth for textbook content stays in `textbook_*`; the mirror is a thin index.
+- 34 existing generated questions, 102 hints, 5 attempts, 3 srs_cards are **preserved** and continue to work alongside textbook content. They are an asset, not legacy garbage.
+
+### Hint provisioning
+
+Hints for textbook questions are **derived on demand**, not stored. The pattern: look up the question's chapter and the nearest `textbook_concept` of `kind='theorem'` / `'definition'` / `'worked_example'`, and serve as a hint with format _"Recall from §10B: [theorem]"_. This matches the original "вспомни что говорилось в теореме такой-то" requirement.
+
+Hints for generated questions stay in the `hint` table as before.
+
+### What the topic tree is
+
+The current 76 topics are an **IB syllabus skeleton**, not a content navigation structure. Until classification fills `textbook_question.topic_id`, textbook content appears under "Unassigned" in any topic-based UI. This is acceptable and does not block functionality.
+
+Earlier framing of "Haese chapter 1 = Topic 1" is **rejected**. The IB syllabus topic tree and the Haese chapter structure are different hierarchies. Linking them is a future classification task, not a structural assumption.
+
+### What is NOT changing
+
+- `textbook_*` schema is read-only from the unified layer's perspective.
+- Chat / RAG (`services/rag.py`, `services/chat_context.py`) continues to query `textbook_*` directly. Not affected by the pivot.
+- Frontend code, routers, SRS engine, attempts, embeddings — unchanged by the pivot.
+- The `pdf-schema-v2` branch — still off-limits unless explicitly merged.
+
+### Why this exists
+
+Phases 3, 4, 5, 5.5 built the system curriculum-first because the original SPEC said "content = LLM generation + open sources" without designating the textbook as primary. By the time Haese was loaded (Phase 5.5), the UI and routers were already committed to the curriculum schema. The Phase R1 pivot is the minimum-cost fix: swap the content underneath without rebuilding the layers above.
+
+---
+
 ## Decisions (append-only)
 
 ### 2026-05-17 — Initial architecture decisions
