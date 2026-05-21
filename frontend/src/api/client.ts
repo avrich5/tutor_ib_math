@@ -1,16 +1,17 @@
 import type {
   ActivityResponse, AttemptRequest, AttemptResponse,
+  ChatMessage, ChatSession, ChatSessionSummary,
   ConceptDetail, HealthResponse, Hint, NextQuestionResponse,
   ProgressSummary, Session, SessionSummary, Solution,
   TodayQueueResponse, TopicDetail, TopicSummary, UserResponse,
   WeakTopic,
 } from './types';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4800';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4800';
 const API_USER = import.meta.env.VITE_API_USER ?? '';
 const API_PASS = import.meta.env.VITE_API_PASS ?? '';
 
-function authHeader(): string {
+export function authHeader(): string {
   return 'Basic ' + btoa(`${API_USER}:${API_PASS}`);
 }
 
@@ -92,4 +93,17 @@ export const api = {
 
   activity: (days = 30) =>
     apiFetch<ActivityResponse>(`/progress/activity?days=${days}`),
+
+  // Chat
+  createChatSession: (studySessionId?: string | null, title?: string) =>
+    apiFetch<ChatSession>('/chat/sessions', {
+      method: 'POST',
+      body: JSON.stringify({ study_session_id: studySessionId ?? null, title: title ?? null }),
+    }),
+
+  listChatSessions: () =>
+    apiFetch<ChatSessionSummary[]>('/chat/sessions'),
+
+  getChatMessages: (chatSessionId: string) =>
+    apiFetch<ChatMessage[]>(`/chat/sessions/${chatSessionId}/messages`),
 };

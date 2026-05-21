@@ -298,3 +298,52 @@ Need to copy or rsync to MacBook before local dry-run/testing.
 1. Убедиться что `chat_session` и `chat_message` пишутся в Postgres (таблицы уже в схеме, см. SPEC раздел 5)
 2. Сказать пользователю где просматривать сохранённые сессии.
    Подтверждено: `GET /chat/sessions` достаточно (прямой просмотр на диске тоже возможен, но API удобнее)
+
+### 2026-05-21 — Phase 5 completed (Chat + RAG MVP)
+
+**Что сделано:**
+- Backend: `app/routers/chat.py` — sessions CRUD + sync message + SSE streaming (EventSourceResponse)
+- Backend: `app/services/chat_context.py` — system prompt builder (current question + weak topics + RAG)
+- Backend: `app/services/rag.py` — pgvector cosine search (`question.embedding`), LRU embed cache, hint lookup
+- Frontend: `ChatPanel.tsx` — SSE streaming, citation pills, markdown+math, session context auto-attach
+- Frontend: `CitationPill.tsx` — hover tooltip, Q=orange/C=green/hint=yellow
+
+**Что НЕ сделано (специально):**
+- Haese RAG — Phase 5.5
+- UI истории чатов — только терминальная команда ниже
+- Token usage UI
+
+**Просмотр чатов из терминала:**
+```bash
+python3 scripts/dump_chat.py --list          # последние 20 сессий
+python3 scripts/dump_chat.py <uuid>          # полный JSON дамп с токенами/ценой
+```
+
+**Tech debt:**
+- `orchestrator_client.py` вызывает Anthropic API напрямую (не через chat_agent :4708)
+  Исправить когда `chat_agent` в `~/home_services/` будет реализован
+  ANTHROPIC_API_KEY находится в `tutor_backend/.env` (temp)
+
+### 2026-05-21 — Phase 5.5 completed (Haese textbook RAG)
+
+**Что сделано:**
+- Migrations: `b4e1f9a2c305` (textbook tables) + `c7d2e4f1a803` (schema v2)
+  — `source_document`, `textbook_concept`, `textbook_question`, `textbook_solution`
+- Fix: `embed_text()` в orchestrator_client теперь вызывает embedding_agent :4705 напрямую
+  (оркестратор не имел `/v1/embed` эндпоинта — RAG тихо не работал до этого фикса)
+- `scripts/load_textbook.py` — идемпотентный загрузчик JSONL → Postgres с эмбеддингами
+- В БД: **1258 textbook_question** + **193 textbook_concept** с 768-dim embeddings
+- `services/rag.py` — добавлены `_fetch_textbook_concepts()` + `_fetch_textbook_questions()`
+- `services/chat_context.py` — форматирует textbook chunks в system prompt
+
+**Команда для перезагрузки данных (если нужно):**
+```bash
+cd ~/tutor_skufs/backend
+# Очистить: psql -d tutor_ib_math -c 'TRUNCATE textbook_concept, textbook_question, textbook_solution, source_document CASCADE;'
+.venv/bin/python ../scripts/load_textbook.py            # загрузить все JSONL
+.venv/bin/python ../scripts/load_textbook.py --dry-run  # посмотреть что будет
+.venv/bin/python ../scripts/load_textbook.py --skip-embed  # без эмбеддингов (быстро)
+```
+
+**Источник данных:** `~/home_services/pdf_ingest_agent/jobs/*/output.jsonl`
+  (44/59 секций ✅ — ch01-ch10; остаток ch09_9A + mixed ch8-11 pending PDF ingest)

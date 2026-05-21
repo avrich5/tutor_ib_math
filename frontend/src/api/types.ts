@@ -165,3 +165,40 @@ export interface ActivityDay {
 export interface ActivityResponse {
   days: ActivityDay[];
 }
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+export interface ChatSession {
+  chat_session_id: string;
+  started_at: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content_md: string;
+  cited_sources: unknown[] | null;
+  created_at: string;
+}
+
+export interface ChatSessionSummary {
+  id: string;
+  title: string | null;
+  study_session_id: string | null;
+  started_at: string;
+  last_message_at: string;
+  message_count: number;
+}
+
+export interface SendMessageResponse {
+  user_message_id: string;
+  assistant_message_id: string;
+  content_md: string;
+}
+
+export interface StreamDoneInfo {
+  message_id: string;
+  tokens_in: number;
+  tokens_out: number;
+  cost_usd: number;
+}

@@ -713,6 +713,39 @@ Chat panel:
 - Never put live LLM in the critical path of grading if SymPy can decide
 
 
+### Chat flow (Phase 5 implementation)
+
+```
+Browser (ChatPanel.tsx)
+  → POST /chat/sessions/{id}/messages/stream   [SSE, text/event-stream]
+  → tutor_backend (chat.py)
+      → services/chat_context.py  ← builds system prompt:
+          • current question (from study session, if any)
+          • weak topics (last 50 attempts, top 3)
+          • RAG results (pgvector cosine search on question.embedding + hint lookup)
+      → orchestrator_client.chat_stream()
+          → Anthropic Messages API (TEMP: direct call, not via chat_agent :4708)
+              model: claude-haiku-4-5-20251001
+  ← SSE: event: chunk / data: {"delta": "..."}
+  ← SSE: event: done  / data: {"message_id": "...", "tokens_in": N, "tokens_out": N, "cost_usd": X}
+  → DB write: chat_message row (user + assistant)
+```
+
+**Phase 5 RAG retrieval** (`services/rag.py`):
+- Query is embedded via `orchestrator.embed_text()` → Ollama nomic-embed-text
+- `question.embedding` searched with pgvector `<=>` (cosine distance), k=3
+- Each retrieved question includes its stored hints (all tiers)
+- `concept.embedding` searched, k=2 — currently always returns [] (no concept embeddings)
+- Haese textbook source chunks → Phase 5.5
+
+Citation markers in LLM output: `[Q:uuid]` (question), `[C:uuid]` (concept), `[hint:uuid:tier]`
+Frontend parses and renders these as `CitationPill` components (orange/green/yellow).
+
+**Tech debt:** `orchestrator_client.py` calls Anthropic API directly (chat_agent :4708 is a 501 stub).
+When `chat_agent` is implemented in `~/home_services/`, remove direct key from `tutor_backend/.env`
+and route through `orchestrator → chat_agent` as per the original architecture.
+
+
 ---
 
 ## 9. Deploy and operations
