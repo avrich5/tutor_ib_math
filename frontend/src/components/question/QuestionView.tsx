@@ -102,8 +102,8 @@ export function QuestionView({
         />
       )}
 
-      {/* Submit / Next row */}
-      {question.kind !== 'flashcard' && (
+      {/* Submit / Checking row (non-flashcard only) */}
+      {question.kind !== 'flashcard' && phase !== 'feedback' && (
         <div className={styles.actions}>
           {phase === 'question' && (
             <Button onClick={handleSubmit} disabled={!answer && question.kind !== 'ordered_steps'}>
@@ -113,14 +113,16 @@ export function QuestionView({
           {phase === 'submitting' && (
             <Button disabled>Checking…</Button>
           )}
-          {phase === 'feedback' && (
-            <>
-              <Button onClick={isLast ? onEnd : onNext}>
-                {isLast ? 'Finish session' : 'Next question'}
-              </Button>
-              <Button variant="secondary" onClick={onEnd}>End session</Button>
-            </>
-          )}
+        </div>
+      )}
+
+      {/* Next / End row (all question kinds) */}
+      {phase === 'feedback' && (
+        <div className={styles.actions}>
+          <Button onClick={isLast ? onEnd : onNext}>
+            {isLast ? 'Finish session' : 'Next question'}
+          </Button>
+          <Button variant="secondary" onClick={onEnd}>End session</Button>
         </div>
       )}
 
