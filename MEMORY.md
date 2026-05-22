@@ -70,7 +70,21 @@ Phases 3, 4, 5, 5.5 built the system curriculum-first because the original SPEC 
 
 ---
 
-## Decisions (append-only)
+## Decisions
+
+### 2026-05-22 — Phase R2 prep: topic classification already done
+
+`scripts/classify_textbook_topics.py` was run on skufs before TASK_phase_R2 was written. Database state after:
+
+- `textbook_question.topic_id`: 1258/1258 filled
+- `textbook_concept.topic_id`: 193/193 filled
+- Unified `question.topic_id` (source_type=textbook): 1258/1258 — confirms R1 sync triggers work in prod
+
+Implication: TASK_phase_R2 Stage 5 ("optional topic classification") is already complete. Claude Code should skip it (or note "already done" in the inventory).
+
+The classification script committed in this entry. The earlier `ce8ead9` commit on MacBook (same script) was discarded during MacBook → skufs sync; this commit is the canonical record.
+
+ (append-only)
 
 ### 2026-05-17 — Initial architecture decisions
 
