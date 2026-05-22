@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { MathText } from '../ui/Math';
+import { Math as MathExpr } from '../ui/Math';
 import styles from './MultipleChoice.module.css';
 
 interface Props {
@@ -37,7 +37,7 @@ export function MultipleChoice({ choices, selected, onChange, disabled }: Props)
           onClick={() => onChange(k)}
         >
           <span className={styles.key}>{k}</span>
-          <MathText text={choices[k]} />
+          <MathExpr latex={choices[k]} />
         </button>
       ))}
     </div>
