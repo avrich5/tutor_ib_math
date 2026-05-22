@@ -86,6 +86,34 @@ The classification script committed in this entry. The earlier `ce8ead9` commit 
 
  (append-only)
 
+### 2026-05-22 — Phase R2 completed (real grading end-to-end)
+
+**Commit:** `7e3641a` on `main`
+
+**Root cause fixed:** `_grade()` was `def` (sync), used `asyncio.get_event_loop().run_until_complete()` inside uvicorn's already-running event loop → `RuntimeError` silently caught → string compare fallback → always wrong. Also used `result.get("correct")` but math_agent returns `result.get("equivalent")`.
+
+**Changes:**
+- `backend/app/routers/attempts.py`: `_grade()` → `async def`; `submit_attempt` → `async def`; fixed `"equivalent"` field; added `None` reference_answer guard; proper exception logging.
+- `backend/app/services/orchestrator_client.py`: `check_answer()` accepts optional `question_stem` parameter for LLM context.
+- `scripts/load_textbook_answers.py`: committed (was untracked).
+- `scripts/_inventory_missing_answers.txt`: Stage 1 audit saved.
+
+**Stage 2 result:** `load_textbook_answers.py --dry-run` → `updated=0, already_set=899`. All 777 JSONL answered records were already in DB. 481 unfilled questions have no answers in any ingested JSONL (mixed ch8-11 answers pending PDF ingest — confirmed absent).
+
+**Stage 5:** Already done before this task (see 2026-05-22 entry above).
+
+**Verification (5 curl tests on skufs):**
+- `6*x + 5` vs ref `6*x + 5` → `correct: true` ✅
+- `6x+5` (equivalent LaTeX) vs ref `6*x + 5` → `correct: true` ✅
+- `7*x + 3` (wrong) → `correct: false` ✅
+- `asdfghjkl!!!` (garbage) → `correct: false`, no crash ✅
+- question with `reference_answer=NULL` → `correct: false`, "no auto-graded reference answer" ✅
+
+**DB state after:**
+- `question WHERE source_type='textbook' AND reference_answer IS NOT NULL`: 777
+- `attempt WHERE correct=true`: 2 (both from this test run; previous 9 were 0/9)
+- `attempt` total: 14
+
 ### 2026-05-17 — Initial architecture decisions
 
 **Stack:**
