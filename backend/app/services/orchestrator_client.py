@@ -33,16 +33,20 @@ class OrchestratorClient:
         *,
         answer_format: str = "expression",
         variables: list[str] | None = None,
+        question_stem: str | None = None,
     ) -> dict:
+        payload: dict = {
+            "student_answer": student_answer,
+            "reference_answer": reference_answer,
+            "answer_format": answer_format,
+            "variables": variables or [],
+        }
+        if question_stem is not None:
+            payload["question_stem"] = question_stem
         async with httpx.AsyncClient(timeout=30.0) as c:
             r = await c.post(
                 f"{self._base}/v1/math/check-answer",
-                json={
-                    "student_answer": student_answer,
-                    "reference_answer": reference_answer,
-                    "answer_format": answer_format,
-                    "variables": variables or [],
-                },
+                json=payload,
                 headers=self._headers,
             )
             r.raise_for_status()

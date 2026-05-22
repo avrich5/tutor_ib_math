@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -15,6 +16,7 @@ from app.models.user import AppUser
 from app.routers.auth import get_current_user
 from app.services.srs_service import get_or_create_card, record_review
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -26,8 +28,8 @@ class AttemptRequest(BaseModel):
     hints_used: int = 0
 
 
-def _grade(q: Question, student_answer: str) -> tuple[bool, str]:
-    """Returns (correct, feedback_md). Pure local grading — no orchestrator."""
+async def _grade(q: Question, student_answer: str) -> tuple[bool, str]:
+    """Returns (correct, feedback_md)."""
     kind = q.kind
 
     if kind == "flashcard":
@@ -63,37 +65,30 @@ def _grade(q: Question, student_answer: str) -> tuple[bool, str]:
             correct = False
         return correct, "Correct order!" if correct else "Not quite — check the order of steps."
 
-    # free_expression — try orchestrator, fall back to string comparison
     if kind == "free_expression":
+        if q.reference_answer is None:
+            return False, "This question has no auto-graded reference answer. Recorded for review."
         try:
-            import asyncio
             from app.services.orchestrator_client import orchestrator
-            result = asyncio.get_event_loop().run_until_complete(
-                orchestrator.check_answer(
-                    student_answer=student_answer,
-                    reference_answer=q.reference_answer,
-                    answer_format="expression",
-                    variables=q.variables or [],
-                )
+            result = await orchestrator.check_answer(
+                student_answer=student_answer,
+                reference_answer=q.reference_answer,
+                answer_format="expression",
+                variables=q.variables or [],
+                question_stem=q.stem_md,
             )
-            correct = bool(result.get("correct", False))
-            feedback = result.get("feedback_md") or ("Correct!" if correct else "Not quite.")
+            correct = bool(result.get("equivalent", False))
+            feedback = result.get("feedback_md") or ("Correct!" if correct else "Not quite — check your work.")
             return correct, feedback
-        except Exception:
-            pass
-        # Fallback: normalize whitespace and compare
-        correct = student_answer.strip() == q.reference_answer.strip()
-        msg = "Correct!" if correct else (
-            "Could not verify automatically — answer recorded. "
-            f"Reference: $${q.reference_answer}$$"
-        )
-        return correct, msg
+        except Exception as exc:
+            logger.warning("check_answer failed: %s", exc)
+            return False, "Could not verify automatically — answer recorded."
 
     return False, "Unknown question kind."
 
 
 @router.post("/attempts")
-def submit_attempt(
+async def submit_attempt(
     req: AttemptRequest,
     user: AppUser = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -112,7 +107,7 @@ def submit_attempt(
     if not q:
         raise HTTPException(status_code=404, detail="Question not found")
 
-    correct, feedback_md = _grade(q, req.student_answer)
+    correct, feedback_md = await _grade(q, req.student_answer)
 
     # Map quality 0-5 for SRS
     quality = 5 if correct and req.hints_used == 0 else (4 if correct else (2 if req.hints_used > 0 else 1))

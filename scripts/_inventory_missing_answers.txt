@@ -1,0 +1,24 @@
+# Stage 1 inventory — 2026-05-22
+# textbook questions missing reference_answer, grouped by chapter
+
+chapter|missing
+1|23
+2|11
+3|7
+4|126
+5|1
+6|80
+7|74
+8|72
+9|25
+10|62
+
+# Total missing: 481
+# Total with reference_answer: 777 (already loaded from JSONL ingest_ff66a7e8)
+#
+# JSONL ingest_ff66a7e8/output.jsonl: 899 exercise_question records with ref_ans/steps
+# Cross-check: 0 match unfilled DB questions (all 899 were already applied)
+#
+# Conclusion: the 481 unfilled questions have no answers in any ingested JSONL.
+# Reason: mixed answers ch8-11 confirmed absent from PDF ingest (see MEMORY.md).
+# Stage 2 load_textbook_answers.py: updated=0, already_set=899 — expected.
