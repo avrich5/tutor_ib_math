@@ -35,7 +35,6 @@ export function TopicList() {
           <Link key={t.slug} to={`/topics/${t.slug}`} className={styles.row}>
             <div className={styles.rowMain}>
               <div className={styles.title}>{t.title}</div>
-              <div className={styles.slug}>{t.slug}</div>
             </div>
             {t.due_count > 0 && (
               <span className={styles.badge}>{t.due_count} due</span>

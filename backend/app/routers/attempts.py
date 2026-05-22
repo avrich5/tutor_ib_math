@@ -77,12 +77,19 @@ async def _grade(q: Question, student_answer: str) -> tuple[bool, str]:
                 variables=q.variables or [],
                 question_stem=q.stem_md,
             )
-            correct = bool(result.get("equivalent", False))
+            equivalent = result.get("equivalent")
+            method = result.get("method", "")
+            if equivalent is None:
+                # Reference answer is unreadable (garbled PDF text, etc.) —
+                # cannot grade; give benefit of the doubt.
+                return True, "Answer recorded — reference answer could not be auto-verified."
+            correct = bool(equivalent)
             feedback = result.get("feedback_md") or ("Correct!" if correct else "Not quite — check your work.")
             return correct, feedback
         except Exception as exc:
+            # Network / orchestrator failure — not the student's fault.
             logger.warning("check_answer failed: %s", exc)
-            return False, "Could not verify automatically — answer recorded."
+            return True, "Could not verify automatically — recorded as correct."
 
     return False, "Unknown question kind."
 
