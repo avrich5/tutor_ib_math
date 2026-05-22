@@ -17,6 +17,7 @@ Tier strategy for textbook questions:
 """
 from __future__ import annotations
 
+import re
 import uuid
 
 from sqlalchemy import text
@@ -26,11 +27,23 @@ from app.models.hint import Hint
 from app.models.question import Question
 from app.models.textbook import TextbookConcept, TextbookQuestion
 
+# Pattern: "Tier N: [sentence]. " prefix injected by LLM when it echoes the
+# system-prompt instructions into its response. Strip at serve time, not in DB.
+_TIER_PREFIX_RE = re.compile(
+    r'^Tier\s+\d+\s*:[^.]+\.\s*'             # "Tier 1: recall a relevant theorem."
+    r'(?:(?:Do NOT|Do not|Show |Use |Limit |Note )[^.]+\.\s*)*',  # optional extra instructions
+    re.DOTALL,
+)
+
+
+def _clean_hint(text_md: str) -> str:
+    return _TIER_PREFIX_RE.sub('', text_md).strip()
+
 
 def resolve_hint(db: Session, question_id: uuid.UUID, tier: int) -> dict | None:
     hint = db.query(Hint).filter_by(question_id=question_id, tier=tier).first()
     if hint:
-        return {"tier": hint.tier, "hint_md": hint.text_md, "source": "generated"}
+        return {"tier": hint.tier, "hint_md": _clean_hint(hint.text_md), "source": "generated"}
 
     q = db.query(Question).filter_by(id=question_id).first()
     if q and q.source_type == "textbook" and q.source_id is not None:
