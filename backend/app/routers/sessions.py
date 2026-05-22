@@ -39,6 +39,7 @@ def _question_payload(q: Question, topic_slug: str) -> dict:
         "stem_md": q.stem_md,
         "choices": choices,
         "steps": steps,
+        "reference_answer": q.reference_answer if q.kind == "flashcard" else None,
         "topic_slug": topic_slug,
         "concept_id": "",
     }

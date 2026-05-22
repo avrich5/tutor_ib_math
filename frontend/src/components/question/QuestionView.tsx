@@ -85,6 +85,7 @@ export function QuestionView({
 
       {question.kind === 'flashcard' && (
         <Flashcard
+          referenceAnswer={question.reference_answer}
           onChange={v => setFlashcardAnswer(v)}
           onSubmit={() => {
             if (flashcardAnswer) onSubmit(flashcardAnswer);

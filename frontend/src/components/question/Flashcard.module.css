@@ -1,6 +1,27 @@
+.revealBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+.answer {
+  padding: 16px;
+  background: var(--surface-raised, #f4f4f4);
+  border-radius: var(--radius);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+
 .actions {
   display: flex;
   gap: var(--gap);
+}
+
+.reveal {
+  width: 100%;
+  background: var(--surface-raised, #e8e8e8);
+  color: var(--text-primary, #111);
+  border: 1px solid var(--border, #ccc);
 }
 
 .btn {
